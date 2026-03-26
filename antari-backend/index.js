@@ -11,8 +11,10 @@ const app = express();
 
 // --- MIDDLEWARE ---
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:3000", "https://shrirupportfolio.onrender.com"],
-    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
+    origin: [
+        "http://localhost:5173",
+        "https://antarristore.vercel.app" // Your NEW Vercel URL
+    ],
     credentials: true
 }));
 app.use(express.json());
