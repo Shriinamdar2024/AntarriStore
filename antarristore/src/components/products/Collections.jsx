@@ -11,24 +11,18 @@ const Collections = () => {
   useEffect(() => {
     const fetchLatestProducts = async () => {
       try {
-        // FIXED: Using the correct '/public' endpoint from your productRoutes.js
-        // Change your axios calls from this:
-        // axios.get('http://localhost:5000/api/products/public')
-
-        // To this:
-        const API_URL = import.meta.env.VITE_API_URL;
+        // UPDATED: Dynamically fetching from your Render URL
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const response = await axios.get(`${API_URL}/api/products/public`);
 
         const products = response.data;
-
         if (Array.isArray(products)) {
           const latest = products
-            .slice(0, 4) // Getting the top 4 (already sorted by createdAt: -1 in backend)
+            .slice(0, 4)
             .map((item) => ({
               id: item._id,
               title: item.name,
               description: item.description || "Fluid silhouettes meets timeless elegance.",
-              // FIXED: Mapping to your 'images' array from the backend
               image: item.images && item.images.length > 0 ? item.images[0] : "https://via.placeholder.com/1200",
               tag: item.category || "Signature"
             }));
@@ -40,7 +34,6 @@ const Collections = () => {
         setLoading(false);
       }
     };
-
     fetchLatestProducts();
   }, []);
 

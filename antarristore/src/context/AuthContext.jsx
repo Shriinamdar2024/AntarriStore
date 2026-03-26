@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+// UPDATED: Import the API utility instead of raw axios to use the live Render URL
+import API from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -48,13 +49,12 @@ export const AuthProvider = ({ children }) => {
 
     const updateUser = async (updatedData) => {
         try {
-            const token = localStorage.getItem('token');
-            const { data } = await axios.put('http://localhost:5000/api/users/profile', updatedData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            // UPDATED: Replaced hardcoded localhost with the dynamic API utility
+            const { data } = await API.put('/users/profile', updatedData);
 
             const updatedUser = data.user || data;
             // Maintain the token in the user object
+            const token = localStorage.getItem('token');
             const newUserInfo = { ...updatedUser, token };
 
             setUser(newUserInfo);
