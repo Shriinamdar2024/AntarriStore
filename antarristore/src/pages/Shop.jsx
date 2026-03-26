@@ -10,11 +10,12 @@ const Shop = () => {
 
     // Fetch dynamic data from Render backend
     useEffect(() => {
+        // ... inside useEffect
         const fetchProducts = async () => {
             try {
-                // Use the specific /public route defined in your productRoutes.js
-                // Replace 'http://localhost:5000' with your actual Antaristore backend URL if deployed
-                const response = await axios.get('http://localhost:5000/api/products/public');
+                // UPDATED: Pointing to Render backend
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                const response = await axios.get(`${API_URL}/api/products/public`);
 
                 setProducts(response.data);
                 setLoading(false);
