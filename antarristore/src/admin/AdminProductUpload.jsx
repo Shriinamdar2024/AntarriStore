@@ -98,8 +98,9 @@ const AdminProductUpload = () => {
         const formData = new FormData();
 
         // Basic Fields
-        formData.append('name', e.target[0].value);
-        formData.append('price', e.target[1].value);
+        const form = e.target;
+        formData.append('name', form.elements.name.value);
+        formData.append('price', form.elements.price.value);
         formData.append('description', description);
         formData.append('category', category);
         formData.append('subCategory', subCategory);
