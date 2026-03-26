@@ -12,7 +12,12 @@ const Collections = () => {
     const fetchLatestProducts = async () => {
       try {
         // FIXED: Using the correct '/public' endpoint from your productRoutes.js
-        const response = await axios.get('http://localhost:5000/api/products/public');
+        // Change your axios calls from this:
+        // axios.get('http://localhost:5000/api/products/public')
+
+        // To this:
+        const API_URL = import.meta.env.VITE_API_URL;
+        const response = await axios.get(`${API_URL}/api/products/public`);
 
         const products = response.data;
 
