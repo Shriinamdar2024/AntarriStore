@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
 const CustomerAuth = () => {
@@ -31,11 +31,9 @@ const CustomerAuth = () => {
         setLoading(true);
         setError('');
 
-        const endpoint = isLogin ? '/api/users/login' : '/api/users/register';
-        const baseURL = "http://localhost:5000";
-
+        const endpoint = isLogin ? '/users/login' : '/users/register';
         try {
-            const { data } = await axios.post(`${baseURL}${endpoint}`, formData);
+            const { data } = await API.post(endpoint, formData);
 
             if (isLogin) {
                 // SUCCESS: Clear admin flags to prevent session cross-talk
