@@ -31,8 +31,7 @@ const CustomerAuth = () => {
         setLoading(true);
         setError('');
 
-        const endpoint = isLogin ? '/users/login' : '/users/register';
-        try {
+        const endpoint = isLogin ? '/api/users/login' : '/api/users/register'; try {
             const { data } = await API.post(endpoint, formData);
 
             if (isLogin) {
