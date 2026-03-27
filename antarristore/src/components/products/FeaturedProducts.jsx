@@ -11,9 +11,8 @@ const FeaturedProducts = () => {
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
-                // UPDATED: Using VITE_API_URL instead of hardcoded localhost
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-                const response = await axios.get(`${API_URL}/api/products/public`);
+                // Fetching from your Render backend
+                const response = await axios.get("http://localhost:5000/api/products/public");                // Only showing the first 3 products for a clean, curated look
                 setFeaturedItems(response.data.slice(0, 3));
             } catch (error) {
                 console.error("Error fetching featured products:", error);

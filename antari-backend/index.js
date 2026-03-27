@@ -10,30 +10,21 @@ const authRoutes = require('./routes/authRoutes');
 const app = express();
 
 // --- MIDDLEWARE ---
-// UPDATED: Added a function to handle multiple Vercel subdomains and preview URLs
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://antarristore.vercel.app",
-    "https://antarri-store.vercel.app"
-];
-
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
-        if (!origin) return callback(null, true);
+        const allowedOrigins = [
+            "http://localhost:5173",
+            "https://antarristore.vercel.app"
+        ];
 
-        // Check if origin is in allowed list OR is a Vercel subdomain
-        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".vercel.app")) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error("CORS not allowed"));
         }
     },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    credentials: true
 }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -72,7 +63,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-// UPDATED: Added '0.0.0.0' to ensure the server binds to the correct network interface on Render
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`🚀 SERVER IS RUNNING ON PORT ${PORT}`);
 });

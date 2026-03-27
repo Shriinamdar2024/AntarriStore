@@ -1,15 +1,7 @@
 import axios from 'axios';
 
-// 1. Define the live Render URL
-const LIVE_BACKEND_URL = 'https://antarri-backend.onrender.com/api';
-
-// 2. Determine which URL to use
-const API_BASE_URL = import.meta.env.PROD
-    ? LIVE_BACKEND_URL
-    : 'http://localhost:5000/api';
-
 const API = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true
 });
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shirt, Smartphone, Search, Filter, Plus, ChevronRight, ArrowLeft, Trash2, Power, PowerOff } from 'lucide-react';
-import API from '../api';
+
 
 const AdminInventory = () => {
     const [view, setView] = useState('hub');
