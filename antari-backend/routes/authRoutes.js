@@ -12,13 +12,17 @@ const {
     verifyRegisterOtp,
     verifyLoginOtp
 } = require('../controllers/userControlller');
-// Setup Email Transporter
+// Setup Email Transporter — with timeout to prevent hanging on Render cold start
 const transporter = nodemailer.createTransport({
     service: 'gmail',
+    pool: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-    }
+    },
+    connectionTimeout: 10000,  // 10s to establish connection
+    greetingTimeout: 10000,    // 10s to get SMTP greeting
+    socketTimeout: 20000,      // 20s socket inactivity limit
 });
 
 // --- CUSTOMER ROUTES ---
@@ -76,8 +80,16 @@ router.post('/admin/login', async (req, res) => {
 
         await user.save({ validateModifiedOnly: true });
 
-        // Send OTP Email
-        await transporter.sendMail({
+        // Send OTP Email — with 15s timeout so it doesn't hang forever
+        const sendMailWithTimeout = (mailOptions) =>
+            Promise.race([
+                transporter.sendMail(mailOptions),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Email send timeout — try again')), 15000)
+                )
+            ]);
+
+        await sendMailWithTimeout({
             from: `"Antaristore Admin" <${process.env.EMAIL_USER}>`,
             to: user.email,
             subject: 'AntariStore — Admin Sign-In Code',
@@ -87,7 +99,11 @@ router.post('/admin/login', async (req, res) => {
         res.json({ message: "OTP sent to your email" });
     } catch (err) {
         console.error("Admin Login Error:", err);
-        res.status(500).json({ message: "System Error: " + err.message });
+        // Return specific timeout message so user knows to retry
+        const msg = err.message.includes('timeout')
+            ? 'Email server is warming up — please try again in 10 seconds'
+            : 'System Error: ' + err.message;
+        res.status(500).json({ message: msg });
     }
 });
 

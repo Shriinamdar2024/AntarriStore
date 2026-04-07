@@ -41,6 +41,11 @@ app.get('/', (req, res) => {
     res.send("Antaristore API is running...");
 });
 
+// Keep-alive ping endpoint — used by frontend to wake Render before heavy requests
+app.get('/ping', (req, res) => {
+    res.status(200).json({ status: 'awake' });
+});
+
 // --- GLOBAL ERROR HANDLER ---
 app.use((err, req, res, next) => {
     console.error("❌ SERVER ERROR:", err.stack);
