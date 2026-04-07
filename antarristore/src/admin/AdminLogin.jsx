@@ -11,6 +11,8 @@ const AdminLogin = () => {
     const [otp, setOtp] = useState('');
     const [isOtpSent, setIsOtpSent] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [loadingMsg, setLoadingMsg] = useState('Requesting Authorization...');
+    const [error, setError] = useState('');
 
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -18,30 +20,43 @@ const AdminLogin = () => {
     const handleLoginRequest = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
         try {
+            // Step 1: Wake the Render server first (free tier cold start ~60s)
+            setLoadingMsg('Waking server...');
+            try {
+                await axios.get('https://antarri-backend.onrender.com/ping', { timeout: 90000 });
+            } catch (_) {
+                // If ping fails, still try the main request — server may just be slow
+            }
+
+            // Step 2: Send OTP request
+            setLoadingMsg('Sending OTP to your email...');
             const normalizedEmail = email.toLowerCase().trim();
-            const response = await axios.post('https://antarri-backend.onrender.com/api/auth/admin/login', {
+            await axios.post('https://antarri-backend.onrender.com/api/auth/admin/login', {
                 email: normalizedEmail,
                 password
-            });
+            }, { timeout: 30000 });
 
             setIsOtpSent(true);
         } catch (err) {
-            alert(err.response?.data?.message || 'Login failed. Check console.');
-            console.error(err);
+            const msg = err.response?.data?.message || err.message || 'Login failed. Please try again.';
+            setError(msg);
         } finally {
             setLoading(false);
+            setLoadingMsg('Requesting Authorization...');
         }
     };
 
     const handleOtpVerify = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
         try {
             const response = await axios.post('https://antarri-backend.onrender.com/api/auth/verify-otp', {
                 email: email.toLowerCase().trim(),
                 otp
-            });
+            }, { timeout: 15000 });
 
             const { token, user } = response.data;
 
@@ -50,10 +65,10 @@ const AdminLogin = () => {
                 login(user, token);
                 navigate('/admin/dashboard', { replace: true });
             } else {
-                alert('Access Denied: Admin privileges required.');
+                setError('Access Denied: Admin privileges required.');
             }
         } catch (err) {
-            alert(err.response?.data?.message || 'OTP Verification failed');
+            setError(err.response?.data?.message || 'OTP Verification failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -132,12 +147,25 @@ const AdminLogin = () => {
                                     disabled={loading}
                                     className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-xl font-bold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
-                                    {loading ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                {loading ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span className="text-sm">{loadingMsg}</span>
+                                        </>
                                     ) : (
                                         <>Request Authorization <ArrowRight size={18} /></>
                                     )}
                                 </button>
+
+                                {/* Inline error instead of alert() */}
+                                {error && (
+                                    <div className="mt-3 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold px-4 py-3 rounded-xl text-center">
+                                        {error}
+                                        {error.includes('warming up') && (
+                                            <p className="mt-1 text-red-500 font-medium">⏱ Wait 10 seconds, then click "Request Authorization" again.</p>
+                                        )}
+                                    </div>
+                                )}
                             </motion.form>
                         ) : (
                             <motion.form 
@@ -172,11 +200,18 @@ const AdminLogin = () => {
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setIsOtpSent(false)}
+                                        onClick={() => { setIsOtpSent(false); setError(''); }}
                                         className="w-full py-3.5 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-xl transition-colors text-sm"
                                     >
                                         Return to Login
                                     </button>
+
+                                    {/* OTP error message */}
+                                    {error && (
+                                        <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-semibold px-4 py-3 rounded-xl text-center">
+                                            {error}
+                                        </div>
+                                    )}
                                 </div>
                             </motion.form>
                         )}
