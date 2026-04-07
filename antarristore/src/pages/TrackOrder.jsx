@@ -40,7 +40,7 @@ const TrackOrder = () => {
                 return;
             }
 
-            const { data } = await axios.get(`http://localhost:5000/api/orders/track/${id}`, {
+            const { data } = await axios.get(`https://antarri-backend.onrender.com/api/orders/track/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -97,7 +97,7 @@ const TrackOrder = () => {
             const token = localStorage.getItem('token');
 
             await axios.put(
-                `http://localhost:5000/api/orders/track/${foundOrder.orderId}/cancel`,
+                `https://antarri-backend.onrender.com/api/orders/track/${foundOrder.orderId}/cancel`,
                 { reason: cancelReason },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

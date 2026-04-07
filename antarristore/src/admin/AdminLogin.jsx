@@ -20,7 +20,7 @@ const AdminLogin = () => {
         setLoading(true);
         try {
             const normalizedEmail = email.toLowerCase().trim();
-            const response = await axios.post('http://localhost:5000/api/auth/admin/login', {
+            const response = await axios.post('https://antarri-backend.onrender.com/api/auth/admin/login', {
                 email: normalizedEmail,
                 password
             });
@@ -38,7 +38,7 @@ const AdminLogin = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/verify-otp', {
+            const response = await axios.post('https://antarri-backend.onrender.com/api/auth/verify-otp', {
                 email: email.toLowerCase().trim(),
                 otp
             });

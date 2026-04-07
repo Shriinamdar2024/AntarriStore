@@ -12,7 +12,7 @@ const FeaturedProducts = () => {
     useEffect(() => {
         const fetchFeatured = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/products/public");
+                const response = await axios.get("https://antarri-backend.onrender.com/api/products/public");
                 // Select first 4 items specifically for the featured grid matching standard desktop viewports
                 setFeaturedItems(response.data.slice(0, 4));
             } catch (error) {

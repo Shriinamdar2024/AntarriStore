@@ -34,7 +34,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
         if (!searchQuery.trim()) { setResults([]); return; }
         setLoading(true);
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/products/public`);
+            const { data } = await axios.get(`https://antarri-backend.onrender.com/api/products/public`);
             const q = searchQuery.toLowerCase();
             const filtered = data.filter(p =>
                 p.name?.toLowerCase().includes(q) ||
