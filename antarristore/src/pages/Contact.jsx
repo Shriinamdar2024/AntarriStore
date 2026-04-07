@@ -11,15 +11,15 @@ const Contact = () => {
     };
 
     return (
-        <div className="bg-[#f1f3f6] min-h-screen pt-24 pb-20 font-sans text-slate-900">
+        <div className="bg-[#f1f3f6] min-h-screen pt-16 sm:pt-24 pb-20 font-sans text-slate-900">
             
             {/* Header */}
             <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-                <div className="bg-white rounded-xl border border-black/5 p-8 text-center shadow-sm">
-                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white rounded-xl border border-black/5 p-5 sm:p-8 text-center shadow-sm">
+                    <div className="w-10 h-10 sm:w-16 sm:h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
                         <MessageSquare className="w-8 h-8" />
                     </div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Help Center & Support</h1>
+                    <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 mb-1 sm:mb-2">Help Center & Support</h1>
                     <p className="text-slate-500 font-medium">We're here to assist you with any questions or concerns.</p>
                 </div>
             </div>
@@ -76,7 +76,7 @@ const Contact = () => {
 
                     {/* Right Form */}
                     <div className="w-full lg:w-2/3">
-                        <div className="bg-white rounded-xl shadow-sm border border-black/5 p-6 md:p-10">
+                        <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 sm:p-6 md:p-10">
                             <h3 className="text-xl font-bold text-slate-900 mb-6">Send Us a Message</h3>
                             
                             <form onSubmit={handleSubmit} className="space-y-6">

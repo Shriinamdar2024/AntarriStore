@@ -4,12 +4,12 @@ import { CheckCircle2, ShieldCheck, Truck, Earth, RefreshCcw } from 'lucide-reac
 
 const About = () => {
     return (
-        <div className="bg-[#f1f3f6] min-h-screen pt-24 pb-20 font-sans text-slate-900">
+        <div className="bg-[#f1f3f6] min-h-screen pt-16 sm:pt-24 pb-20 font-sans text-slate-900">
             
             {/* Header Banner */}
             <section className="bg-white border-b border-black/5 shadow-sm mb-10">
-                <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-                    <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 font-sans">
+                <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 text-center">
+                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-slate-900 mb-3 sm:mb-6 font-sans">
                         About Antari Store
                     </h1>
                     <p className="text-slate-600 text-lg max-w-2xl mx-auto font-medium leading-relaxed">
@@ -21,10 +21,10 @@ const About = () => {
             <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
                 
                 {/* Core Promises Section */}
-                <section className="bg-white rounded-2xl border border-black/5 shadow-sm p-8 md:p-12">
+                <section className="bg-white rounded-2xl border border-black/5 shadow-sm p-5 sm:p-8 md:p-12">
                     <h2 className="text-2xl font-bold text-slate-900 mb-8 border-b-2 border-blue-600 pb-2 inline-block">The Antari Promise</h2>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
                         {[
                             { icon: <ShieldCheck className="w-8 h-8 text-blue-600" />, title: "100% Secure", desc: "Enterprise-grade encryption for all your transactions and data." },
                             { icon: <Truck className="w-8 h-8 text-blue-600" />, title: "Fast Delivery", desc: "Expedited shipping network guaranteeing prompt physical arrival." },
@@ -51,7 +51,7 @@ const About = () => {
 
                 {/* Operations & Scale Section */}
                 <section className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden flex flex-col md:flex-row">
-                    <div className="w-full md:w-1/2 bg-slate-900 p-10 md:p-16 flex flex-col justify-center">
+                    <div className="w-full md:w-1/2 bg-slate-900 p-6 sm:p-10 md:p-16 flex flex-col justify-center">
                         <h2 className="text-3xl font-extrabold text-white mb-6">Operations & Scale</h2>
                         <ul className="space-y-4">
                             {[
@@ -67,7 +67,7 @@ const About = () => {
                             ))}
                         </ul>
                     </div>
-                    <div className="w-full md:w-1/2 p-10 md:p-16 flex flex-col justify-center items-center text-center bg-blue-50">
+                    <div className="w-full md:w-1/2 p-6 sm:p-10 md:p-16 flex flex-col justify-center items-center text-center bg-blue-50">
                         <p className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">Join Millions of Shoppers</p>
                         <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">Start Exploring Now</h2>
                         <a href="/shop" className="px-8 py-4 bg-[#facc15] hover:bg-[#eab308] text-slate-900 font-bold rounded-xl shadow-sm hover:-translate-y-0.5 transition-all w-full max-w-xs text-lg">

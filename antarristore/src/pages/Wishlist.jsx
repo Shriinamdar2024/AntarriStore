@@ -46,18 +46,18 @@ const Wishlist = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 px-4 md:px-6 lg:px-8 font-sans text-slate-900">
+        <div className="min-h-screen bg-[#f1f3f6] pt-16 sm:pt-24 pb-20 px-3 sm:px-4 md:px-6 lg:px-8 font-sans text-slate-900">
             <div className="max-w-[1400px] mx-auto">
                 
                 {/* Header Container */}
-                <div className="bg-white rounded-xl shadow-sm border border-black/5 p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 sm:p-6 mb-4 sm:mb-6 flex flex-row items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 sm:w-12 sm:h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center shrink-0">
                             <Heart className="w-6 h-6 fill-rose-500 text-rose-500" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-900">My Wishlist</h1>
-                            <p className="text-sm text-slate-500 font-medium">{wishlist.length} {wishlist.length === 1 ? 'Item' : 'Items'}</p>
+                            <h1 className="text-lg sm:text-2xl font-bold text-slate-900">My Wishlist</h1>
+                            <p className="text-xs sm:text-sm text-slate-500 font-medium">{wishlist.length} {wishlist.length === 1 ? 'Item' : 'Items'}</p>
                         </div>
                     </div>
 
@@ -91,7 +91,7 @@ const Wishlist = () => {
                             </button>
                         </motion.div>
                     ) : (
-                        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                        <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
                             {wishlist.map((item) => (
                                 <motion.div
                                     layout
@@ -120,16 +120,16 @@ const Wishlist = () => {
                                     </div>
 
                                     {/* Details */}
-                                    <div className="p-4 flex flex-col flex-1 border-t border-slate-100">
+                                    <div className="p-2.5 sm:p-4 flex flex-col flex-1 border-t border-slate-100">
                                         <div className="mb-3 flex-1 flex flex-col" onClick={() => navigate(`/product/${item._id || item.id}`)}>
-                                            <h3 className="text-sm font-bold text-slate-800 line-clamp-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors">{item.name}</h3>
-                                            <p className="text-lg font-extrabold text-slate-900 mt-auto pt-2">₹{item.price.toLocaleString()}</p>
+                                            <h3 className="text-xs sm:text-sm font-bold text-slate-800 line-clamp-2 leading-tight cursor-pointer hover:text-blue-600 transition-colors">{item.name}</h3>
+                                            <p className="text-base sm:text-lg font-extrabold text-slate-900 mt-auto pt-1.5">₹{item.price.toLocaleString()}</p>
                                         </div>
 
                                         {/* Move to Cart CTA */}
                                         <button
                                             onClick={() => handleMoveToCart(item)}
-                                            className="w-full bg-[#facc15] hover:bg-[#eab308] text-slate-900 py-2.5 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+                                            className="w-full bg-[#facc15] hover:bg-[#eab308] text-slate-900 py-2 sm:py-2.5 rounded-lg font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-1 sm:gap-2 shadow-sm"
                                         >
                                             <ShoppingCart className="w-4 h-4 text-slate-800" />
                                             Move to Cart

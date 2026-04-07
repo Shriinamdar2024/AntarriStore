@@ -215,12 +215,12 @@ const Checkout = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans text-textPrimary">
+        <div className="min-h-screen bg-[#f1f3f6] pt-16 sm:pt-24 pb-20 px-3 sm:px-6 lg:px-8 font-sans text-textPrimary">
             
             {/* Safe/Secure Header Wrapper */}
             <div className="max-w-[1280px] mx-auto mb-6">
-                <div className="bg-white p-4 rounded-xl border border-black/5 shadow-sm flex items-center justify-between">
-                    <h1 className="text-xl md:text-2xl font-bold text-slate-900">Checkout Process</h1>
+                <div className="bg-white p-3 sm:p-4 rounded-xl border border-black/5 shadow-sm flex items-center justify-between">
+                    <h1 className="text-base sm:text-2xl font-bold text-slate-900">Checkout Process</h1>
                     <div className="flex items-center gap-2 text-emerald-600">
                         <ShieldCheck className="w-5 h-5" />
                         <span className="text-sm font-bold uppercase tracking-wide">100% Secure</span>
@@ -235,11 +235,11 @@ const Checkout = () => {
                     <div className="w-full lg:w-[65%] space-y-6">
                         {/* Delivery Address Section */}
                         <section className="bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 flex items-center gap-3">
+                            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-3">
                                 <span className="bg-slate-800 text-white w-6 h-6 rounded flex items-center justify-center font-bold text-sm">1</span>
                                 <h2 className="text-lg font-bold text-slate-900">Delivery Address</h2>
                             </div>
-                            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1.5">Full Name</label>
                                     <input type="text" name="fullName" value={formData.fullName} required onChange={handleInputChange} disabled={isSubmitting} className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
@@ -269,12 +269,12 @@ const Checkout = () => {
 
                         {/* Payment Method Section */}
                         <section className="bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 flex items-center gap-3">
+                            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-3">
                                 <span className="bg-slate-800 text-white w-6 h-6 rounded flex items-center justify-center font-bold text-sm">2</span>
                                 <h2 className="text-lg font-bold text-slate-900">Payment Options</h2>
                             </div>
-                            <div className="p-6 space-y-4">
-                                <label className={`flex items-center justify-between p-5 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === 'upi' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 hover:border-blue-300'}`}>
+                            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                                <label className={`flex items-center justify-between p-3 sm:p-5 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === 'upi' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 hover:border-blue-300'}`}>
                                     <div className="flex items-center gap-4">
                                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'upi' ? 'border-blue-600' : 'border-slate-300'}`}>
                                             {paymentMethod === 'upi' && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full" />}
@@ -287,7 +287,7 @@ const Checkout = () => {
                                     <Smartphone className={`w-6 h-6 ${paymentMethod === 'upi' ? 'text-blue-600' : 'text-slate-400'}`} />
                                 </label>
 
-                                <label className={`flex items-center justify-between p-5 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 hover:border-blue-300'}`}>
+                                <label className={`flex items-center justify-between p-3 sm:p-5 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 hover:border-blue-300'}`}>
                                     <div className="flex items-center gap-4">
                                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'cod' ? 'border-blue-600' : 'border-slate-300'}`}>
                                             {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full" />}
@@ -305,7 +305,7 @@ const Checkout = () => {
 
                     {/* Order Summary Sidebar */}
                     <div className="w-full lg:w-[35%] lg:sticky lg:top-28">
-                        <div className="bg-white rounded-xl shadow-sm border border-black/5 p-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 sm:p-6">
                             <h2 className="text-lg font-bold text-slate-900 mb-6 border-b border-slate-100 pb-4">Order Summary</h2>
                             
                             <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto no-scrollbar">

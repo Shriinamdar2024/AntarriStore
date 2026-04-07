@@ -102,7 +102,7 @@ const ProductDetail = () => {
     const originalPrice = Math.round(product.price * 1.35); // 35% markup for strikethrough
 
     return (
-        <div className="pt-24 pb-20 bg-[#f1f3f6] min-h-screen font-sans text-textPrimary">
+        <div className="pt-16 sm:pt-24 pb-24 sm:pb-20 bg-[#f1f3f6] min-h-screen font-sans text-textPrimary">
             <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
                 
                 {/* Breadcrumbs */}
@@ -118,8 +118,8 @@ const ProductDetail = () => {
                 <div className="bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden flex flex-col lg:flex-row mb-8">
 
                     {/* Left: Product Image Slider */}
-                    <div className="w-full lg:w-[45%] xl:w-[40%] bg-white border-b lg:border-b-0 lg:border-r border-slate-100 p-6 flex flex-col">
-                        <div className="relative w-full rounded-xl overflow-hidden border border-slate-100 mb-4 group h-[400px] sm:h-[500px] md:h-[600px] bg-slate-50 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-full lg:w-[45%] xl:w-[40%] bg-white border-b lg:border-b-0 lg:border-r border-slate-100 p-3 sm:p-6 flex flex-col">
+                        <div className="relative w-full rounded-xl overflow-hidden border border-slate-100 mb-3 sm:mb-4 group h-[260px] sm:h-[500px] md:h-[600px] bg-slate-50 flex-shrink-0 flex items-center justify-center">
                             
                             {/* In-stock Badge */}
                             <div className="absolute top-4 left-4 z-10 bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider shadow-sm">
@@ -176,7 +176,7 @@ const ProductDetail = () => {
                                             });
                                             setActiveImageIndex(idx);
                                         }}
-                                        className={`relative shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${activeImageIndex === idx ? 'border-accent shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}
+                                        className={`relative shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${activeImageIndex === idx ? 'border-accent shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}
                                     >
                                         <img src={img} className="w-full h-full object-contain p-1" alt="thumbnail" />
                                     </button>
@@ -186,11 +186,11 @@ const ProductDetail = () => {
                     </div>
 
                     {/* Right: Product Content */}
-                    <div className="w-full lg:w-[55%] xl:w-[60%] p-6 lg:p-10 flex flex-col">
+                    <div className="w-full lg:w-[55%] xl:w-[60%] p-4 sm:p-6 lg:p-10 flex flex-col">
                         
                         {/* Title & Ratings Header */}
                         <div className="border-b border-slate-100 pb-6 mb-6">
-                            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-3 leading-tight">
+                            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
                                 {product.name}
                             </h1>
                             
@@ -206,7 +206,7 @@ const ProductDetail = () => {
                             </div>
                             <span className="text-emerald-600 font-bold text-sm">Special price</span>
                             <div className="flex items-end gap-3 mt-1">
-                                <span className="text-3xl md:text-4xl font-extrabold text-slate-900">
+                                <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">
                                     ₹{product.price.toLocaleString('en-IN')}
                                 </span>
                                 <span className="text-lg text-slate-500 font-medium line-through mb-1">
@@ -311,21 +311,22 @@ const ProductDetail = () => {
                         </div>
 
                         {/* CTA Buttons - Amazon/Flipkart inspired */}
-                        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                        {/* Mobile: shown inline above specs */}
+                        <div className="flex flex-col sm:flex-row gap-3 mb-6 sm:mb-8">
                             <button
                                 onClick={() => addToCart({ ...product, image: displayImages[0], selectedSize, selectedColor, selectedBrand, selectedModel })}
-                                className="flex-1 bg-[#facc15] hover:bg-[#eab308] text-zinc-900 py-3.5 rounded-xl font-bold text-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                                className="flex-1 bg-[#facc15] hover:bg-[#eab308] text-zinc-900 py-3 sm:py-3.5 rounded-xl font-bold text-base sm:text-lg transition-colors shadow-sm flex items-center justify-center gap-2"
                             >
                                 Add to Cart
                             </button>
                             <button
-                                className="flex-1 bg-[#fb923c] hover:bg-[#f97316] text-white py-3.5 rounded-xl font-bold text-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                                className="flex-1 bg-[#fb923c] hover:bg-[#f97316] text-white py-3 sm:py-3.5 rounded-xl font-bold text-base sm:text-lg transition-colors shadow-sm flex items-center justify-center gap-2"
                             >
                                 Buy Now
                             </button>
                             <button
                                 onClick={() => toggleWishlist(product)}
-                                className={`w-14 h-14 rounded-xl border flex items-center justify-center shrink-0 transition-colors shadow-sm ${isInWishlist(product._id || product.id) ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
+                                className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl border flex items-center justify-center shrink-0 transition-colors shadow-sm ${isInWishlist(product._id || product.id) ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
                             >
                                 <Heart className={`w-6 h-6 ${isInWishlist(product._id || product.id) ? 'fill-red-500 stroke-red-500' : 'stroke-slate-600'}`} />
                             </button>
@@ -362,7 +363,7 @@ const ProductDetail = () => {
                         <div className="flex items-center gap-2 mb-8">
                             <h2 className="text-xl md:text-2xl font-bold text-slate-900 border-b-2 border-emerald-500 pb-1 inline-block">Similar Products</h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             {relatedProducts.map((p, index) => (
                                 <ProductCard key={p._id || p.id} {...p} id={p._id || p.id} index={index} />
                             ))}
