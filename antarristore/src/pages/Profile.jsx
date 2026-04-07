@@ -4,22 +4,20 @@ import { User, MapPin, CreditCard, Settings, LogOut, Save, CheckCircle2, X } fro
 import { useAuth } from '../context/AuthContext';
 
 const ProfileField = ({ label, value, field, type = "text", isEditing, onInputChange }) => (
-    <div className="group space-y-2">
-        <label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold block transition-colors group-focus-within:text-black">
+    <div className="space-y-1.5">
+        <label className="text-sm font-bold text-slate-700 block">
             {label}
         </label>
         {isEditing ? (
-            <motion.input
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+            <input
                 type={type}
                 value={value || ''}
                 onChange={(e) => onInputChange(field, e.target.value)}
-                className="w-full bg-slate-50 border-b border-slate-200 py-3 px-4 text-sm focus:border-black outline-none transition-all font-medium text-slate-900 rounded-none"
+                className="w-full bg-white border border-slate-300 py-2.5 px-4 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-medium text-slate-900 shadow-sm"
             />
         ) : (
-            <p className="text-sm font-serif text-slate-800 py-3 px-1 border-b border-transparent">
-                {value || <span className="italic text-slate-300">Not specified</span>}
+            <p className="text-sm font-medium text-slate-900 bg-slate-50 py-2.5 px-4 rounded-lg border border-slate-200">
+                {value || <span className="text-slate-400 italic">Not provided</span>}
             </p>
         )}
     </div>
@@ -44,11 +42,9 @@ const Profile = () => {
     const [activeTab, setActiveTab] = useState('Personal Info');
     const [showSuccess, setShowSuccess] = useState(false);
 
-    // Sync local form state when the global user data loads
     useEffect(() => {
         if (user) {
             setFormData({
-                // Ensuring we check both fullName and name for maximum compatibility
                 fullName: user.fullName || user.name || '',
                 email: user.email || '',
                 phone: user.phone || '',
@@ -64,13 +60,12 @@ const Profile = () => {
 
     const handleSave = async () => {
         try {
-            // This sends the full formData to the backend /api/users/profile
             await updateUser(formData);
             setIsEditing(false);
             setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 4000);
+            setTimeout(() => setShowSuccess(false), 3000);
         } catch (error) {
-            console.error("Archive sync failed:", error);
+            console.error("Profile update failed:", error);
         }
     };
 
@@ -84,11 +79,15 @@ const Profile = () => {
     };
 
     if (!user && !isEditing) {
-        return <div className="min-h-screen flex items-center justify-center font-serif italic text-slate-400">Loading Archive...</div>;
+        return (
+            <div className="min-h-[60vh] bg-[#f1f3f6] flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
     }
 
     return (
-        <div className="min-h-screen bg-[#FDFDFB] pt-32 pb-20 px-6 sm:px-12 md:px-20 relative overflow-x-hidden">
+        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans text-slate-900 relative">
             <AnimatePresence>
                 {showSuccess && (
                     <motion.div
@@ -97,109 +96,92 @@ const Profile = () => {
                         exit={{ opacity: 0, transition: { duration: 0.2 } }}
                         className="fixed bottom-8 right-8 z-[100] w-80"
                     >
-                        <div className="relative overflow-hidden bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-none shadow-2xl p-5">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center space-x-4">
-                                    <div className="relative bg-emerald-500/20 p-2 rounded-none">
-                                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Archive Updated</h4>
-                                        <p className="text-[11px] text-slate-400 mt-1 font-serif italic">Persistent changes saved.</p>
-                                    </div>
+                        <div className="bg-emerald-600 rounded-xl shadow-2xl p-4 flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <CheckCircle2 className="w-6 h-6 text-white" />
+                                <div>
+                                    <h4 className="text-sm font-bold text-white leading-tight">Profile Updated</h4>
+                                    <p className="text-xs text-emerald-100 font-medium">Your changes have been saved.</p>
                                 </div>
-                                <button onClick={() => setShowSuccess(false)} className="text-slate-500 hover:text-white transition-colors">
-                                    <X size={14} />
-                                </button>
                             </div>
-                            <div className="absolute bottom-0 left-0 h-[3px] bg-slate-800 w-full">
-                                <motion.div
-                                    initial={{ width: "100%" }}
-                                    animate={{ width: "0%" }}
-                                    transition={{ duration: 4, ease: "linear" }}
-                                    className="h-full bg-emerald-500"
-                                />
-                            </div>
+                            <button onClick={() => setShowSuccess(false)} className="text-emerald-200 hover:text-white transition-colors">
+                                <X size={16} />
+                            </button>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div className="max-w-6xl mx-auto">
-                <header className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-100 pb-12">
-                    <div className="space-y-4">
-                        <div className="flex items-center space-x-3">
-                            <div className="h-[1px] w-8 bg-black" />
-                            <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400 font-bold">Persistence Layer</span>
-                        </div>
-                        <h1 className="text-6xl font-serif text-slate-900 leading-tight">
-                            Personal <span className="italic font-light text-slate-400 text-5xl">Archive</span>
-                        </h1>
+            <div className="max-w-[1280px] mx-auto">
+                {/* Header Container */}
+                <div className="bg-white rounded-xl shadow-sm border border-black/5 p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">Your Account</h1>
+                        <p className="text-sm font-medium text-slate-500">Manage your profile securely</p>
                     </div>
 
                     <button
                         onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                        className={`group relative px-10 py-5 transition-all duration-500 border rounded-none ${isEditing ? 'bg-black text-white border-black' : 'bg-transparent text-black border-slate-200 hover:border-black'
-                            }`}
+                        className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm w-full sm:w-auto ${isEditing ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50'}`}
                     >
-                        <div className="relative z-10 flex items-center space-x-3">
-                            {isEditing ? <Save className="w-4 h-4" /> : <Settings className="w-4 h-4 transition-transform group-hover:rotate-90" />}
-                            <span className="text-[10px] font-bold uppercase tracking-[0.3em]">
-                                {isEditing ? 'Sync to Storage' : 'Modify Profile'}
-                            </span>
-                        </div>
+                        {isEditing ? <Save className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+                        {isEditing ? 'Save Changes' : 'Edit Profile'}
                     </button>
-                </header>
+                </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-                    <nav className="lg:col-span-4 space-y-2">
-                        {[
-                            { icon: <User className="w-4 h-4" />, label: 'Personal Info' },
-                            { icon: <MapPin className="w-4 h-4" />, label: 'Shipping Address' },
-                            { icon: <CreditCard className="w-4 h-4" />, label: 'Billing Details' },
-                            { icon: <LogOut className="w-4 h-4" />, label: 'Sign Out', action: handleSignOut },
-                        ].map((item) => (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    {/* Navigation Sidebar */}
+                    <nav className="lg:col-span-3 space-y-2">
+                        <div className="bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden p-2">
+                            {[
+                                { icon: <User className="w-5 h-5" />, label: 'Personal Info' },
+                                { icon: <MapPin className="w-5 h-5" />, label: 'Shipping Address' },
+                                { icon: <CreditCard className="w-5 h-5" />, label: 'Billing Details' },
+                            ].map((item) => (
+                                <button
+                                    key={item.label}
+                                    onClick={() => setActiveTab(item.label)}
+                                    className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-lg transition-colors text-left ${activeTab === item.label ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-600 font-medium hover:bg-slate-50'}`}
+                                >
+                                    <span className={activeTab === item.label ? 'text-blue-600' : 'text-slate-400'}>{item.icon}</span>
+                                    <span>{item.label}</span>
+                                </button>
+                            ))}
+                            
+                            <div className="h-px bg-slate-100 my-2 mx-4" />
+                            
                             <button
-                                key={item.label}
-                                onClick={() => item.action ? item.action() : setActiveTab(item.label)}
-                                className={`w-full flex items-center justify-between p-6 transition-all duration-300 rounded-none ${activeTab === item.label && !item.action
-                                    ? 'bg-white shadow-sm border-l-2 border-black'
-                                    : 'hover:bg-slate-50 grayscale hover:grayscale-0'
-                                    }`}
+                                onClick={handleSignOut}
+                                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-lg transition-colors text-left text-slate-600 font-medium hover:bg-red-50 hover:text-red-600 group"
                             >
-                                <div className="flex items-center space-x-5">
-                                    <span className={activeTab === item.label ? 'text-black' : 'text-slate-400 group-hover:text-black'}>
-                                        {item.icon}
-                                    </span>
-                                    <span className={`text-[11px] uppercase tracking-[0.2em] font-bold ${activeTab === item.label ? 'text-black' : 'text-slate-400 group-hover:text-black'
-                                        }`}>
-                                        {item.label}
-                                    </span>
-                                </div>
+                                <LogOut className="w-5 h-5 text-slate-400 group-hover:text-red-500" />
+                                <span>Sign Out</span>
                             </button>
-                        ))}
+                        </div>
                     </nav>
 
-                    <main className="lg:col-span-8">
+                    {/* Content Box */}
+                    <main className="lg:col-span-9">
                         <motion.div
                             key={activeTab}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-white p-10 md:p-16 border border-slate-100 shadow-sm rounded-none"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+                            className="bg-white rounded-xl shadow-sm border border-black/5 p-6 md:p-8"
                         >
+                            <h2 className="text-xl font-bold text-slate-900 mb-6 border-b border-slate-100 pb-4">{activeTab}</h2>
+
                             {activeTab === 'Personal Info' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                    <ProfileField label="Full Legal Name" value={formData.fullName} field="fullName" isEditing={isEditing} onInputChange={updateFormData} />
-                                    <ProfileField label="Contact Email" value={formData.email} field="email" type="email" isEditing={isEditing} onInputChange={updateFormData} />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <ProfileField label="Full Name" value={formData.fullName} field="fullName" isEditing={isEditing} onInputChange={updateFormData} />
+                                    <ProfileField label="Email Address" value={formData.email} field="email" type="email" isEditing={isEditing} onInputChange={updateFormData} />
                                     <ProfileField label="Mobile Number" value={formData.phone} field="phone" isEditing={isEditing} onInputChange={updateFormData} />
-                                    <ProfileField label="Primary City" value={formData.city} field="city" isEditing={isEditing} onInputChange={updateFormData} />
                                 </div>
                             )}
 
                             {activeTab === 'Shipping Address' && (
-                                <div className="space-y-12">
+                                <div className="space-y-6">
                                     <ProfileField label="Street Address" value={formData.address} field="address" isEditing={isEditing} onInputChange={updateFormData} />
-                                    <div className="grid grid-cols-2 gap-12">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <ProfileField label="City" value={formData.city} field="city" isEditing={isEditing} onInputChange={updateFormData} />
                                         <ProfileField label="Pincode" value={formData.pincode} field="pincode" isEditing={isEditing} onInputChange={updateFormData} />
                                     </div>
@@ -207,14 +189,14 @@ const Profile = () => {
                             )}
 
                             {activeTab === 'Billing Details' && (
-                                <div className="space-y-12">
+                                <div className="space-y-6">
                                     <ProfileField label="Name on Card" value={formData.cardName} field="cardName" isEditing={isEditing} onInputChange={updateFormData} />
                                     <ProfileField label="Card Number" value={formData.cardNumber} field="cardNumber" isEditing={isEditing} onInputChange={updateFormData} />
-                                    <div className="grid grid-cols-2 gap-12">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <ProfileField label="Expiry Date" value={formData.expiry} field="expiry" isEditing={isEditing} onInputChange={updateFormData} />
-                                        <div className="space-y-2 opacity-50">
-                                            <label className="text-[10px] uppercase tracking-[0.2em] font-bold block">Security Code</label>
-                                            <p className="text-sm py-3 text-slate-900 font-medium font-serif">***</p>
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-bold text-slate-700 block">CVV</label>
+                                            <p className="text-sm font-medium text-slate-500 bg-slate-50 py-2.5 px-4 rounded-lg border border-slate-200 cursor-not-allowed">***</p>
                                         </div>
                                     </div>
                                 </div>

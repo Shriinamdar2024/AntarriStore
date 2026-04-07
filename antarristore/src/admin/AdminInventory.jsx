@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shirt, Smartphone, Search, Filter, Plus, ChevronRight, ArrowLeft, Trash2, Power, PowerOff } from 'lucide-react';
-
+import API from '../utils/api';
 
 const AdminInventory = () => {
     const [view, setView] = useState('hub');
@@ -53,7 +53,7 @@ const AdminInventory = () => {
 
         const matchesCategory = view === 'clothing'
             ? itemCategory === 'clothing'
-            : (itemCategory === 'electronics' || itemCategory === 'accessories' || itemCategory === 'mobile accessories');
+            : itemCategory === 'mobile accessories';
 
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesCategory && matchesSearch;

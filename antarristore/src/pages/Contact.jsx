@@ -1,111 +1,136 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
 
 const Contact = () => {
-    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
 
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log("Message Sent:", formData);
-        alert("Thank you. Our concierge will contact you shortly.");
+        alert("Thank you. Our customer support team will contact you shortly.");
     };
 
     return (
-        <div className="pt-32 pb-20 bg-white">
-            <div className="max-w-7xl mx-auto px-6 lg:px-20">
-
-                {/* Header */}
-                <div className="mb-20">
-                    <motion.span
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        className="text-[10px] uppercase tracking-[0.5em] text-gray-400 mb-4 block"
-                    >
-                        Get in Touch
-                    </motion.span>
-                    <h1 className="text-4xl md:text-6xl font-serif">We're here to assist.</h1>
+        <div className="bg-[#f1f3f6] min-h-screen pt-24 pb-20 font-sans text-slate-900">
+            
+            {/* Header */}
+            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+                <div className="bg-white rounded-xl border border-black/5 p-8 text-center shadow-sm">
+                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MessageSquare className="w-8 h-8" />
+                    </div>
+                    <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Help Center & Support</h1>
+                    <p className="text-slate-500 font-medium">We're here to assist you with any questions or concerns.</p>
                 </div>
+            </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
-
-                    {/* Contact Details - Left */}
-                    <div className="space-y-12">
-                        <div className="space-y-6">
-                            <h3 className="text-xs uppercase tracking-widest font-semibold text-primary">Customer Concierge</h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center space-x-4 group cursor-pointer">
-                                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-500">
-                                        <Mail className="w-4 h-4" />
+            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col lg:flex-row gap-8">
+                    
+                    {/* Left Details Grid */}
+                    <div className="w-full lg:w-1/3 space-y-6">
+                        
+                        <div className="bg-white rounded-xl shadow-sm border border-black/5 p-6 md:p-8">
+                            <h3 className="text-lg font-bold text-slate-900 mb-6 border-b border-slate-100 pb-4">Contact Information</h3>
+                            
+                            <div className="space-y-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                                        <Mail className="w-5 h-5 text-blue-600" />
                                     </div>
-                                    <span className="text-sm font-light text-gray-600">care@antarristore.com</span>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800">Email Support</p>
+                                        <p className="text-sm font-medium text-slate-500 mt-0.5">help@antaristore.com</p>
+                                        <p className="text-xs text-slate-400 mt-1">Typical response within 24 hours</p>
+                                    </div>
                                 </div>
-                                <div className="flex items-center space-x-4 group cursor-pointer">
-                                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-500">
-                                        <Phone className="w-4 h-4" />
+                                
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                                        <Phone className="w-5 h-5 text-emerald-600" />
                                     </div>
-                                    <span className="text-sm font-light text-gray-600">+91 98765 43210</span>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800">Phone Support</p>
+                                        <p className="text-sm font-medium text-slate-500 mt-0.5">+91 1800 123 4567</p>
+                                        <p className="text-xs text-slate-400 mt-1">Mon-Sat, 9:00 AM to 6:00 PM</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
+                                        <MapPin className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800">Headquarters</p>
+                                        <p className="text-sm font-medium text-slate-500 mt-0.5 leading-relaxed">
+                                            Suite 402, Business Park,<br />
+                                            Bandra West, Mumbai,<br />
+                                            Maharashtra 400050
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-6">
-                            <h3 className="text-xs uppercase tracking-widest font-semibold text-primary">Headquarters</h3>
-                            <div className="flex items-start space-x-4">
-                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                                    <MapPin className="w-4 h-4" />
-                                </div>
-                                <p className="text-sm font-light text-gray-600 leading-relaxed max-w-xs">
-                                    Suite 402, The Creative Block,<br />
-                                    Bandra West, Mumbai,<br />
-                                    Maharashtra 400050
-                                </p>
-                            </div>
-                        </div>
                     </div>
 
-                    {/* Contact Form - Right */}
-                    <motion.form
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        onSubmit={handleSubmit}
-                        className="space-y-8 bg-secondary p-8 md:p-12 rounded-2xl shadow-lg border border-tertiary"
-                    >
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest text-textSecondary font-semibold">Full Name</label>
-                            <input
-                                type="text"
-                                required
-                                className="w-full bg-transparent border-b border-gray-200 py-3 text-sm focus:border-accent outline-none transition-colors font-medium text-textPrimary"
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            />
+                    {/* Right Form */}
+                    <div className="w-full lg:w-2/3">
+                        <div className="bg-white rounded-xl shadow-sm border border-black/5 p-6 md:p-10">
+                            <h3 className="text-xl font-bold text-slate-900 mb-6">Send Us a Message</h3>
+                            
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-700">Full Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm"
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-700">Email Address</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm"
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700">Subject</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm"
+                                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700">Your Message</label>
+                                    <textarea
+                                        rows="5"
+                                        required
+                                        className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm resize-none"
+                                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                    ></textarea>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full sm:w-auto px-8 py-3.5 bg-[#facc15] hover:bg-[#eab308] text-slate-900 rounded-xl font-bold text-base shadow-sm transition-colors flex items-center justify-center gap-2"
+                                >
+                                    Submit Request
+                                    <Send className="w-4 h-4" />
+                                </button>
+                            </form>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest text-textSecondary font-semibold">Email Address</label>
-                            <input
-                                type="email"
-                                required
-                                className="w-full bg-transparent border-b border-gray-200 py-3 text-sm focus:border-accent outline-none transition-colors font-medium text-textPrimary"
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest text-textSecondary font-semibold">Message</label>
-                            <textarea
-                                rows="4"
-                                required
-                                className="w-full bg-transparent border-b border-gray-200 py-3 text-sm focus:border-accent outline-none transition-colors font-medium text-textPrimary resize-none"
-                                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                            ></textarea>
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full bg-accent text-white py-4 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-accentHover transition-colors flex items-center justify-center space-x-3 rounded-md shadow-md"
-                        >
-                            <span>Send Message</span>
-                            <Send className="w-4 h-4 ml-2" />
-                        </button>
-                    </motion.form>
+                    </div>
 
                 </div>
             </div>

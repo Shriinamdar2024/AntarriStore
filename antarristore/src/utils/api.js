@@ -1,12 +1,11 @@
 import axios from 'axios';
 
+// ✅ Direct backend URL (no env, no conditions)
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-    withCredentials: true
-
+    baseURL: 'http://localhost:5000/api'
 });
 
-// Attach Token
+// ✅ Attach JWT token for protected routes
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -14,6 +13,8 @@ API.interceptors.request.use((req) => {
     }
     return req;
 });
-console.log("API URL:", import.meta.env.VITE_API_URL);
+
+// ✅ Debug log
+console.log("Current API Target:", 'http://localhost:5000/api');
 
 export default API;

@@ -1,35 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Flame } from 'lucide-react';
 import axios from 'axios';
+import ProductCard from './ProductCard'; // Correct path to ProductCard
 
 const Collections = () => {
-  const [dynamicCollections, setDynamicCollections] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLatestProducts = async () => {
       try {
-        // UPDATED: Dynamically fetching from your Render URL
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const response = await axios.get(`${API_URL}/api/products/public`);
 
-        const products = response.data;
-        if (Array.isArray(products)) {
-          const latest = products
-            .slice(0, 4)
-            .map((item) => ({
-              id: item._id,
-              title: item.name,
-              description: item.description || "Fluid silhouettes meets timeless elegance.",
-              image: item.images && item.images.length > 0 ? item.images[0] : "https://via.placeholder.com/1200",
-              tag: item.category || "Signature"
-            }));
-          setDynamicCollections(latest);
+        if (Array.isArray(response.data)) {
+          // Take top 4 or 5 newest/featured items
+          const latest = response.data.slice(0, 4);
+          setProducts(latest);
         }
       } catch (error) {
-        console.error("❌ Error fetching admin products:", error);
+        console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
       }
@@ -37,115 +29,68 @@ const Collections = () => {
     fetchLatestProducts();
   }, []);
 
+  if (loading) {
+      return (
+          <div className="bg-[#f1f3f6] py-20 flex flex-col items-center justify-center gap-4 min-h-[400px]">
+              <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-accent animate-spin" />
+              <p className="text-textSecondary font-medium text-sm animate-pulse">Loading amazing deals...</p>
+          </div>
+      );
+  }
+
+  if (products.length === 0) return null;
+
   return (
-    <div className="min-h-screen bg-[#FBFBF9] pt-28 pb-16 px-6 sm:px-12 relative overflow-hidden">
-      {/* Background Textures */}
-      <div className="absolute inset-0 opacity-[0.02] bg-[url('https://res.cloudinary.com/dzf9v7nkr/image/upload/v1676451163/noise_fllvly.png')] pointer-events-none" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <header className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-8 items-end">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex items-center space-x-3 mb-4">
-              <span className="w-8 h-[1px] bg-accent" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-accent">Curated Series</span>
+    <div className="bg-[#f1f3f6] pb-16 px-4 md:px-6 lg:px-8">
+      <div className="max-w-[1500px] mx-auto">
+        
+        {/* Amazon/Flipkart White Section Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden p-6 md:p-8">
+          
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 leading-none">
+                  Trending Top Deals
+                </h2>
+                <div className="bg-rose-100 text-rose-600 p-1.5 rounded-full animate-bounce">
+                    <Flame className="w-5 h-5 fill-current" />
+                </div>
+              </div>
+              <p className="text-slate-500 font-medium text-sm md:text-base">Hurry, grabbing deals at massive discounts!</p>
             </div>
-            <h1 className="text-5xl md:text-7xl font-serif text-textPrimary leading-[0.9]">
-              The <span className="italic font-light text-textSecondary/60">Collections</span>
-            </h1>
-          </motion.div>
+            
+            <Link to="/shop">
+              <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors shadow-sm whitespace-nowrap w-full sm:w-auto">
+                View All <ArrowRight className="w-4 h-4" />
+              </button>
+            </Link>
+          </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-textSecondary text-sm font-light leading-relaxed max-w-sm lg:ml-auto border-l border-black/5 pl-6"
-          >
-            A deliberate study of form, fabric, and silhouette. Exploring the architectural approach to contemporary tailoring.
-          </motion.p>
-        </header>
-
-        <AnimatePresence mode="wait">
-          {loading ? (
-            <motion.div
-              key="loader"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="h-[50vh] flex flex-col items-center justify-center space-y-4"
-            >
-              <Loader2 className="w-8 h-8 animate-spin text-accent/50" />
-              <p className="text-[10px] uppercase tracking-widest text-textSecondary">Syncing Gallery...</p>
-            </motion.div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20 lg:gap-x-20">
-              {dynamicCollections.map((item, index) => (
+          {/* Product Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <AnimatePresence>
+              {products.map((item, index) => (
                 <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 30 }}
+                  key={item._id || item.id}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: index * 0.1 }}
-                  className={`group relative ${index % 2 !== 0 ? 'md:mt-32' : ''}`}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Link to={`/product/${item.id}`}>
-                    <div className="relative aspect-[10/13] overflow-hidden rounded-sm bg-stone-100 shadow-xl group-hover:shadow-2xl transition-all duration-700">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover grayscale-[40%] group-hover:grayscale-0 transition-all duration-[1.8s] ease-out group-hover:scale-105"
-                      />
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 group-hover:opacity-70 transition-opacity duration-700" />
-
-                      <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 text-white">
-                        <span className="text-[9px] uppercase tracking-[0.5em] font-bold mb-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                          {item.tag}
-                        </span>
-
-                        <h3 className="text-3xl md:text-4xl font-serif mb-3 leading-none">
-                          {item.title}
-                        </h3>
-
-                        <p className="text-xs md:text-sm text-white/60 font-light max-w-[240px] h-0 group-hover:h-auto opacity-0 group-hover:opacity-100 transition-all duration-700 overflow-hidden leading-relaxed">
-                          {item.description}
-                        </p>
-
-                        <div className="mt-6 flex items-center space-x-3 group-hover:text-accent transition-colors duration-300">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.3em] border-b border-white/20 pb-1 group-hover:border-accent">
-                            Explore Series
-                          </span>
-                          <ArrowUpRight className="w-3 h-3 translate-y-0.5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-
-                  <div className="absolute -bottom-8 -right-4 md:-right-8 pointer-events-none select-none">
-                    <span className="text-[8vw] font-serif text-black/[0.03] italic leading-none group-hover:text-accent/5 transition-colors duration-1000">
-                      0{index + 1}
-                    </span>
-                  </div>
+                  <ProductCard 
+                    {...item} 
+                    id={item._id || item.id} 
+                    images={item.images || [item.image]} 
+                    index={index} 
+                  />
                 </motion.div>
               ))}
-            </div>
-          )}
-        </AnimatePresence>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          className="mt-48 pt-12 border-t border-black/5 flex flex-col items-center"
-        >
-          <h2 className="text-2xl font-serif italic text-textPrimary text-center mb-6">
-            Timelessness, <span className="text-accent/60">Defined.</span>
-          </h2>
-          <div className="w-[1px] h-20 bg-gradient-to-b from-accent to-transparent" />
-        </motion.div>
+            </AnimatePresence>
+          </div>
+          
+        </div>
       </div>
     </div>
   );

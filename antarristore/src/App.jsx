@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // Layout Components
 import Navbar from './components/layout/Navbar';
 import CartDrawer from './components/layout/CartDrawer';
@@ -111,9 +113,14 @@ function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
+
     <AuthProvider>
       <CartProvider>
         <Router>
+
+          {/* ✅ ADD THIS HERE */}
+          <ToastContainer position="top-center" autoClose={2000} theme="dark" />
+
           <Routes>
             {/* --- STOREFRONT ROUTES --- */}
             <Route element={

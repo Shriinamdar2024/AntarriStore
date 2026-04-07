@@ -6,13 +6,13 @@ import {
     Box, Shirt, Watch, BookOpen, Truck, ClipboardList, LogIn, LogOut
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext'; // Ensure this path is correct
 
 const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { cartCount, wishlist } = useCart();
-    const { user, logout } = useAuth();
+    const { user, logout } = useAuth(); // Accessing global auth state
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -105,12 +105,13 @@ const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
                                     className="text-textPrimary/70 hover:text-accent transition-colors duration-300 relative flex items-center gap-2"
                                 >
                                     <Heart className="w-4 h-4" />
-                                    {wishlist && wishlist.length > 0 && (
+                                    {wishlist?.length > 0 && (
                                         <span className="absolute -top-1 left-2 w-2 h-2 bg-accent rounded-full" />
                                     )}
                                 </button>
                             </div>
 
+                            {/* Dynamic Login/Logout Button */}
                             <button
                                 onClick={handleAuthAction}
                                 className={`text-textPrimary/70 hover:text-accent transition-colors duration-300 p-1 ${location.pathname === '/login' ? 'text-accent' : ''}`}
@@ -119,6 +120,7 @@ const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
                                 {user ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
                             </button>
 
+                            {/* Profile Icon - Only visible when logged in */}
                             {user && (
                                 <button
                                     onClick={() => navigate('/profile')}
@@ -131,7 +133,7 @@ const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
 
                             <button
                                 onClick={onCartClick}
-                                className="bg-textPrimary text-primary px-4 py-2 hover:bg-accent hover:text-white transition-all duration-300 flex items-center group rounded-none"
+                                className="bg-textPrimary text-primary px-4 py-2 hover:bg-accent hover:text-white transition-all duration-300 flex items-center group"
                             >
                                 <ShoppingBag className="w-4 h-4 mr-3" />
                                 <span className="text-[10px] uppercase tracking-[0.2em] font-black whitespace-nowrap">
@@ -139,6 +141,7 @@ const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
                                 </span>
                             </button>
 
+                            {/* Mobile Menu Toggle */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(true)}
                                 className="lg:hidden text-textPrimary/70 hover:text-accent transition-colors"
@@ -151,6 +154,7 @@ const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
                 </div>
             </motion.nav>
 
+            {/* Mobile Full-Screen Menu */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
@@ -173,6 +177,7 @@ const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
                         </div>
 
                         <div className="flex-1 flex flex-col justify-center px-12 sm:px-20 space-y-6">
+                            {/* Mobile Profile Link - Only visible when logged in */}
                             {user && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
                                     <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="text-[10px] uppercase tracking-[0.4em] text-accent font-bold mb-4 block underline">Account Archive</Link>
@@ -198,6 +203,7 @@ const Navbar = ({ onCartClick, onMenuClick, onSearchClick }) => {
                                 </motion.div>
                             ))}
 
+                            {/* Mobile Auth Link */}
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
