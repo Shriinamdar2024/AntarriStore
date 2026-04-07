@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserCircle, Home, ShoppingBag, Info, Phone, Package, Heart } from 'lucide-react';
+import { X, UserCircle, Home, ShoppingBag, Info, Phone, Package, Heart, Truck, Search, LogIn, LogOut, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const MobileMenu = ({ isOpen, onClose }) => {
+const MobileMenu = ({ isOpen, onClose, onSearchClick }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -94,6 +94,10 @@ const MobileMenu = ({ isOpen, onClose }) => {
                                         <Package className="w-5 h-5 text-slate-400" />
                                         <span className="text-slate-700 font-medium font-sans">Your Orders</span>
                                     </Link>
+                                    <Link to="/wishlist" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
+                                        <Heart className="w-5 h-5 text-slate-400" />
+                                        <span className="text-slate-700 font-medium font-sans">Wishlist</span>
+                                    </Link>
                                     <Link to="/track-order" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
                                         <Truck className="w-5 h-5 text-slate-400" />
                                         <span className="text-slate-700 font-medium font-sans">Track Package</span>
@@ -119,14 +123,38 @@ const MobileMenu = ({ isOpen, onClose }) => {
 
                         </div>
 
-                        {/* Sign Out Area */}
-                        {user && (
-                            <div className="border-t border-slate-200 p-6 bg-slate-50">
-                                <button onClick={handleSignOut} className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-bold shadow-sm hover:bg-slate-100 transition-colors">
+                        {/* Bottom Actions */}
+                        <div className="border-t border-slate-200 p-4 space-y-3 bg-slate-50">
+                            {/* Search */}
+                            {onSearchClick && (
+                                <button
+                                    onClick={() => { onClose(); onSearchClick(); }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-700 font-bold text-sm hover:bg-slate-50 transition-colors shadow-sm"
+                                >
+                                    <Search className="w-5 h-5 text-slate-400" />
+                                    Search Products
+                                </button>
+                            )}
+                            {/* Auth */}
+                            {user ? (
+                                <button
+                                    onClick={handleSignOut}
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors shadow-sm"
+                                >
+                                    <LogOut className="w-5 h-5" />
                                     Sign Out
                                 </button>
-                            </div>
-                        )}
+                            ) : (
+                                <Link
+                                    to="/login"
+                                    onClick={onClose}
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                                >
+                                    <LogIn className="w-5 h-5" />
+                                    Sign In / Register
+                                </Link>
+                            )}
+                        </div>
                     </motion.div>
                 </>
             )}

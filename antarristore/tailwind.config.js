@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        xs: '475px',
+      },
       colors: {
         primary: "#f8fafc", // Light Slate 50
         secondary: "#ffffff", // Pure White
