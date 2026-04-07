@@ -1,5 +1,16 @@
+const getOtpTemplate = require('../utils/emailTemplate');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+
+// Mail transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
 // Helper to create JWT
 const generateToken = (id) => {
@@ -10,49 +21,89 @@ const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
-// @desc    Register new customer
-// @route   POST /api/users/register
+// ================= REGISTER STEP 1 (SEND OTP) =================
 exports.registerUser = async (req, res) => {
     if (!req.body) {
         return res.status(400).json({ message: "No data sent in request" });
     }
 
-    const { name, email, password } = req.body;
+    const { email } = req.body;
 
     try {
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'PLEASE FILL ALL FIELDS' });
+        if (!email) {
+            return res.status(400).json({ message: 'EMAIL REQUIRED' });
         }
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        const userExists = await User.findOne({ email: normalizedEmail });
-        if (userExists) {
+        let user = await User.findOne({ email: normalizedEmail });
+
+        if (user && user.isVerified) {
             return res.status(400).json({ message: 'USER ALREADY EXISTS' });
         }
 
-        const user = await User.create({
-            name,
-            email: normalizedEmail,
-            password,
-            role: 'customer'
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        if (!user) {
+            user = new User({
+                name: "temp_user", // ✅ FIX
+                email: normalizedEmail,
+                password: "temp123",
+                otp,
+                otpExpires: Date.now() + 10 * 60 * 1000
+            });
+        } else {
+            user.otp = otp;
+            user.otpExpires = Date.now() + 10 * 60 * 1000;
+        }
+
+        await user.save();
+
+        await transporter.sendMail({
+            to: user.email,
+            subject: "AntariStore — Verify Your Email",
+            html: getOtpTemplate(otp, "register")
         });
 
-        res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id),
-        });
+        res.json({ message: "OTP sent to email", email: user.email });
+
     } catch (error) {
-        console.error("❌ REGISTRATION ERROR:", error);
-        res.status(500).json({ message: `SERVER ERROR: ${error.message.toUpperCase()}` });
+        console.error("❌ OTP SEND ERROR:", error);
+        res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Authenticate customer & get token
-// @route   POST /api/users/login
+// ================= REGISTER STEP 2 (VERIFY OTP + SET PASSWORD) =================
+exports.verifyRegisterOtp = async (req, res) => {
+    const { email, otp, name, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+            return res.status(400).json({ message: "INVALID OR EXPIRED OTP" });
+        }
+
+        user.name = name;
+        user.password = password;
+        user.isVerified = true;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+
+        await user.save();
+
+        res.json({
+            message: "REGISTRATION COMPLETE",
+            token: generateToken(user._id),
+            user
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// ================= LOGIN STEP 1 (PASSWORD → SEND OTP) =================
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
 
@@ -64,68 +115,90 @@ exports.loginUser = async (req, res) => {
         const normalizedEmail = email.toLowerCase().trim();
         const user = await User.findOne({ email: normalizedEmail });
 
-        if (!user) {
-            return res.status(401).json({ message: 'INVALID EMAIL OR PASSWORD' });
+        if (!user || !user.isVerified) {
+            return res.status(401).json({ message: 'USER NOT VERIFIED' });
         }
 
         const isMatch = await user.comparePassword(password);
-
-        if (isMatch) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                fullName: user.name, // Added for frontend consistency
-                email: user.email,
-                role: user.role,
-                phone: user.phone || '',
-                address: user.address || '',
-                city: user.city || '',
-                pincode: user.pincode || '',
-                cardName: user.cardName || '',
-                cardNumber: user.cardNumber || '',
-                expiry: user.expiry || '',
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(401).json({ message: 'INVALID EMAIL OR PASSWORD' });
+        if (!isMatch) {
+            return res.status(401).json({ message: 'INVALID EMAIL OR PASSWORD' });
         }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        user.otp = otp;
+        user.otpExpires = Date.now() + 10 * 60 * 1000;
+
+        await user.save();
+
+        await transporter.sendMail({
+            to: user.email,
+            subject: "AntariStore — Sign-In Verification Code",
+            html: getOtpTemplate(otp, "login")
+        });
+
+        res.json({ message: "OTP sent to email" });
+
     } catch (error) {
-        console.error("❌ LOGIN 500 ERROR:", error.message);
+        console.error("❌ LOGIN OTP ERROR:", error.message);
         res.status(500).json({ message: `SERVER ERROR: ${error.message.toUpperCase()}` });
     }
 };
 
-// @desc    Update user profile
-// @route   PUT /api/users/profile
-// @access  Private
+// ================= LOGIN STEP 2 (VERIFY OTP) =================
+exports.verifyLoginOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+            return res.status(400).json({ message: "INVALID OR EXPIRED OTP" });
+        }
+
+        user.otp = undefined;
+        user.otpExpires = undefined;
+
+        await user.save();
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            fullName: user.name,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user._id),
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// ================= EXISTING PROFILE (UNCHANGED) =================
 exports.updateUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
 
         if (user) {
-            // Personal Info
-            // Fix: Map 'fullName' from frontend to 'name' in DB
             user.name = req.body.fullName || req.body.name || user.name;
             user.email = req.body.email || user.email;
             user.phone = req.body.phone || user.phone;
 
-            // Shipping
             user.address = req.body.address || user.address;
             user.city = req.body.city || user.city;
             user.pincode = req.body.pincode || user.pincode;
 
-            // Billing
             user.cardName = req.body.cardName || user.cardName;
             user.cardNumber = req.body.cardNumber || user.cardNumber;
             user.expiry = req.body.expiry || user.expiry;
 
-            // Ensure role doesn't change during profile update
             const updatedUser = await user.save();
 
             res.json({
                 user: {
                     _id: updatedUser._id,
-                    fullName: updatedUser.name, // Mapping back for React state consistency
+                    fullName: updatedUser.name,
                     name: updatedUser.name,
                     email: updatedUser.email,
                     phone: updatedUser.phone,

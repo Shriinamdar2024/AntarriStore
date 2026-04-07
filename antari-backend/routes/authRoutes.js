@@ -4,8 +4,14 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { protect } = require('../middleware/authMiddleware');
-const { registerUser, loginUser, updateUserProfile } = require('../controllers/userControlller');
-
+const getOtpTemplate = require('../utils/emailTemplate');
+const {
+    registerUser,
+    loginUser,
+    updateUserProfile,
+    verifyRegisterOtp,
+    verifyLoginOtp
+} = require('../controllers/userControlller');
 // Setup Email Transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -18,7 +24,8 @@ const transporter = nodemailer.createTransport({
 // --- CUSTOMER ROUTES ---
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-
+router.post('/verify-register', verifyRegisterOtp);
+router.post('/verify-login', verifyLoginOtp);
 // --- PERMANENT PROFILE SYNC ---
 // Handles the "Save" button in Profile.js - persists to DB permanently
 router.put('/profile', protect, updateUserProfile);
@@ -73,8 +80,8 @@ router.post('/admin/login', async (req, res) => {
         await transporter.sendMail({
             from: `"Antaristore Admin" <${process.env.EMAIL_USER}>`,
             to: user.email,
-            subject: 'Antaristore Admin Access Code',
-            text: `Your secure login code is: ${otp}.`
+            subject: 'AntariStore — Admin Sign-In Code',
+            html: getOtpTemplate(otp, "login")
         });
 
         res.json({ message: "OTP sent to your email" });

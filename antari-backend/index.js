@@ -10,13 +10,9 @@ const authRoutes = require('./routes/authRoutes');
 const app = express();
 
 // --- MIDDLEWARE ---
-app.use(cors({
-    origin: "https://antarristore.vercel.app",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
-app.options('*', cors());
+// ✅ FIXED: Simplified CORS to avoid preflight issues
+app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
