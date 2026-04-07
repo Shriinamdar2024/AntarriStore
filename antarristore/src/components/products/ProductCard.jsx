@@ -1,82 +1,124 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
-import { Plus, ArrowUpRight } from 'lucide-react';
+import { ShoppingCart, Star, Heart } from 'lucide-react';
 
 const ProductCard = ({ id, images, name, price, category, index }) => {
-    const { addToCart } = useCart();
+    const { addToCart, toggleWishlist, isInWishlist } = useCart();
+    const [isHovered, setIsHovered] = useState(false);
+    
+    const isWished = isInWishlist(id);
 
-    // FIXED: Access the first image from the Cloudinary array saved in your MongoDB
-    const displayImage = images && images.length > 0 ? images[0] : 'https://via.placeholder.com/300x400?text=No+Image';
+    // Get the first image
+    const displayImage = images && images.length > 0 ? images[0] : 'https://via.placeholder.com/400x400?text=Premium+Product';
+
+    // Mock calculations for premium e-commerce feel
+    const rating = (Math.random() * (5 - 3.8) + 3.8).toFixed(1); // Ratings between 3.8 and 5.0
+    const reviews = Math.floor(Math.random() * 800) + 24; 
+    const originalPrice = Math.floor(price * 1.3); // Mock 30% discount
+    const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{
-                duration: 0.9,
-                delay: index * 0.1,
-                ease: [0.215, 0.61, 0.355, 1]
-            }}
-            className="group relative flex flex-col w-full"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.05 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="group relative flex flex-col bg-white rounded-2xl border border-tertiary/60 shadow-[0_2px_12px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] hover:border-accent/40 overflow-hidden transition-all duration-300"
         >
-            <Link to={`/product/${id}`} className="block relative overflow-hidden">
-                {/* Image Container - Sharp Edges */}
-                <div className="relative aspect-[3/4] overflow-hidden bg-[#F5F5F3] transition-all duration-700 ease-in-out border border-black/[0.05]">
+            {/* Wishlist Button */}
+            <button 
+                onClick={(e) => { 
+                    e.preventDefault(); 
+                    toggleWishlist({ _id: id, id, image: displayImage, images, name, price, category }); 
+                }}
+                className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm border border-tertiary text-textSecondary hover:text-rose-500 hover:border-rose-200 transition-all shadow-sm"
+            >
+                <Heart className={`w-4 h-4 transition-all duration-300 ${isWished ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
+            </button>
+
+            {/* Badges */}
+            <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+                {discount > 20 && (
+                    <span className="bg-red-500 text-white text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md shadow-sm">
+                        {discount}% Off
+                    </span>
+                )}
+                {index % 3 === 0 && (
+                    <span className="bg-textPrimary text-white text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md shadow-sm">
+                        Top Rated
+                    </span>
+                )}
+            </div>
+
+            <Link to={`/product/${id}`} className="block relative overflow-hidden bg-primary/20 pt-6 px-6 pb-2">
+                {/* Image Container */}
+                <div className="relative aspect-square overflow-hidden rounded-xl bg-transparent flex items-center justify-center">
                     <motion.img
                         src={displayImage}
                         alt={name}
-                        className="w-full h-full object-cover grayscale-[15%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
+                        className={`w-full h-full object-contain max-h-[220px] transition-transform duration-700 ease-out ${isHovered ? 'scale-105' : 'scale-100'}`}
                     />
+                </div>
+            </Link>
 
-                    {/* Industrial Quick Add - Sharp Edges */}
-                    <div className="absolute inset-x-0 bottom-0 p-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out z-20">
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                // Passing the resolved displayImage to the cart context
-                                addToCart({ id, image: displayImage, name, price, category });
-                            }}
-                            className="w-full bg-white text-textPrimary py-3 text-[10px] tracking-[0.3em] font-bold uppercase hover:bg-black hover:text-white transition-all duration-300 flex items-center justify-center space-x-2 border border-black shadow-none"
-                        >
-                            <span>Quick Add</span>
-                            <Plus className="w-3 h-3 stroke-[3]" />
-                        </button>
-                    </div>
+            {/* Information Section */}
+            <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
+                
+                {/* Brand / Category */}
+                <p className="text-[11px] font-bold uppercase tracking-widest text-[#0ea5e9] mb-1.5">
+                    {category}
+                </p>
 
-                    {/* Floating Category Badge */}
-                    <div className="absolute top-4 left-4">
-                        <span className="text-[8px] uppercase tracking-[0.4em] font-bold text-textPrimary/60 bg-white border border-black/10 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                            {category}
+                {/* Title */}
+                <Link to={`/product/${id}`}>
+                    <h3 className="text-sm sm:text-base font-semibold text-textPrimary leading-tight mb-2 line-clamp-2 hover:text-accent transition-colors">
+                        {name}
+                    </h3>
+                </Link>
+
+                {/* Ratings (Amazon/Flipkart Style) */}
+                <div className="flex items-center gap-2 mb-3">
+                    <span className="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        {rating} <Star className="w-2.5 h-2.5 fill-white" />
+                    </span>
+                    <span className="text-xs text-textSecondary font-medium">({reviews.toLocaleString()})</span>
+                    {index % 2 === 0 && (
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Flipkart_Assured_logo.png" alt="Assured" className="h-3 ml-auto opacity-80" onError={(e) => e.target.style.display='none'} />
+                    )}
+                </div>
+
+                {/* Price Section */}
+                <div className="mt-auto">
+                    <div className="flex items-baseline gap-2 mb-1">
+                        <span className="text-xl font-bold text-textPrimary">
+                            ₹{price.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-sm text-textSecondary line-through font-medium">
+                            ₹{originalPrice.toLocaleString('en-IN')}
                         </span>
                     </div>
 
-                    <div className="absolute inset-0 bg-black/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                </div>
+                    {/* Delivery Info */}
+                    <p className="text-xs text-textSecondary font-medium mb-4">
+                        Free delivery by <span className="font-bold text-textPrimary">Tomorrow</span>
+                    </p>
 
-                {/* Information Section */}
-                <div className="mt-6 space-y-2">
-                    <div className="flex justify-between items-start group/title">
-                        <div className="space-y-1">
-                            <h3 className="text-[15px] font-serif text-textPrimary leading-tight tracking-tight">
-                                {name}
-                            </h3>
-                            <p className="text-[10px] uppercase tracking-[0.15em] text-textSecondary/60 font-medium">
-                                {category}
-                            </p>
-                        </div>
-                        <div className="text-right flex flex-col items-end">
-                            <p className="text-[13px] font-sans font-bold text-textPrimary tracking-tight">
-                                ₹{price.toLocaleString('en-IN')}
-                            </p>
-                            <ArrowUpRight className="w-3 h-3 text-accent opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500" />
-                        </div>
-                    </div>
+                    {/* Quick Add Button */}
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            addToCart({ id, image: displayImage, name, price, category });
+                        }}
+                        className="w-full bg-[#facc15] hover:bg-[#eab308] text-zinc-900 border border-[#ca8a04] py-2.5 px-4 rounded-xl text-sm font-bold transition-all shadow-[0_2px_4px_rgba(250,204,21,0.2)] flex items-center justify-center gap-2 relative overflow-hidden"
+                    >
+                        <ShoppingCart className="w-4 h-4" />
+                        <span>Add to Cart</span>
+                    </button>
                 </div>
-            </Link>
+            </div>
         </motion.div>
     );
 };

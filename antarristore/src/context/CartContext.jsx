@@ -10,33 +10,35 @@ export const CartProvider = ({ children }) => {
     const [wishlist, setWishlist] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
+    // ✅ FIX: ensure consistent user ID
+    const userId = user ? (user._id || user.id) : null;
+
     // Effect 1: Handle Login/Logout State Reset
     useEffect(() => {
-        if (user) {
-            // If user logs in, load their specific cart from localStorage
-            const savedCart = localStorage.getItem(`ant_cart_${user.id}`);
-            const savedWishlist = localStorage.getItem(`ant_wishlist_${user.id}`);
+        if (userId) {
+            const savedCart = localStorage.getItem(`ant_cart_${userId}`);
+            const savedWishlist = localStorage.getItem(`ant_wishlist_${userId}`);
+
             setCartItems(savedCart ? JSON.parse(savedCart) : []);
             setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
         } else {
-            // If user logs out, clear the current state completely
             setCartItems([]);
             setWishlist([]);
         }
-    }, [user]);
+    }, [userId]);
 
     // Effect 2: Persist to user-specific storage keys
     useEffect(() => {
-        if (user) {
-            localStorage.setItem(`ant_cart_${user.id}`, JSON.stringify(cartItems));
+        if (userId) {
+            localStorage.setItem(`ant_cart_${userId}`, JSON.stringify(cartItems));
         }
-    }, [cartItems, user]);
+    }, [cartItems, userId]);
 
     useEffect(() => {
-        if (user) {
-            localStorage.setItem(`ant_wishlist_${user.id}`, JSON.stringify(wishlist));
+        if (userId) {
+            localStorage.setItem(`ant_wishlist_${userId}`, JSON.stringify(wishlist));
         }
-    }, [wishlist, user]);
+    }, [wishlist, userId]);
 
     const cartCount = useMemo(() =>
         cartItems.reduce((total, item) => total + item.quantity, 0),
@@ -52,7 +54,7 @@ export const CartProvider = ({ children }) => {
     }, [cartItems]);
 
     const addToCart = (product) => {
-        if (!user) {
+        if (!userId) {
             alert("Please login to add items to your bag.");
             return;
         }
@@ -88,10 +90,11 @@ export const CartProvider = ({ children }) => {
     };
 
     const toggleWishlist = (product) => {
-        if (!user) {
+        if (!userId) {
             alert("Please login to manage your wishlist.");
             return;
         }
+
         setWishlist((prev) => {
             const productId = String(product._id || product.id);
             const exists = prev.find((item) => String(item._id || item.id) === productId);
@@ -115,7 +118,7 @@ export const CartProvider = ({ children }) => {
     const isInWishlist = (id) => {
         const idToCompare = String(id);
         return wishlist.some(item => String(item._id || item.id) === idToCompare);
-    }
+    };
 
     return (
         <CartContext.Provider value={{
@@ -132,4 +135,4 @@ export const useCart = () => {
     const context = useContext(CartContext);
     if (!context) throw new Error("useCart must be used within a CartProvider");
     return context;
-};
+};  

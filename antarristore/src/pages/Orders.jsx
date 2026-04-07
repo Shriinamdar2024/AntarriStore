@@ -10,7 +10,11 @@ import {
     XCircle,
     Clipboard,
     Clock,
-    CheckCircle2
+    CheckCircle2,
+    MapPin,
+    AlertCircle,
+    RefreshCw,
+    Search
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -19,12 +23,11 @@ const Orders = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [actionModal, setActionModal] = useState({ show: false, type: '', orderId: null });
     const [reason, setReason] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
-    // Dynamic State
     const [myOrders, setMyOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch orders from Backend
     useEffect(() => {
         const fetchOrders = async () => {
             try {
@@ -57,7 +60,7 @@ const Orders = () => {
         fetchOrders();
     }, []);
 
-    const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+    const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'];
 
     const canReturn = (date) => {
         if (!date) return false;
@@ -68,20 +71,28 @@ const Orders = () => {
     };
 
     const filteredOrders = useMemo(() => {
-        if (activeFilter === 'All') return myOrders;
-        return myOrders.filter(o => o.status?.toLowerCase() === activeFilter.toLowerCase());
-    }, [activeFilter, myOrders]);
+        let list = myOrders;
 
-    // UPDATED handleActionSubmit
+        if (activeFilter !== 'All') {
+            list = list.filter(o => o.status?.toLowerCase() === activeFilter.toLowerCase());
+        }
+
+        if (searchQuery.trim() !== '') {
+            const query = searchQuery.toLowerCase();
+            list = list.filter(o => 
+                (o.orderId && o.orderId.toLowerCase().includes(query)) ||
+                o.orderItems?.some(item => item.name?.toLowerCase().includes(query))
+            );
+        }
+
+        return list;
+    }, [activeFilter, searchQuery, myOrders]);
+
     const handleActionSubmit = async () => {
         try {
             const token = localStorage.getItem('token');
             const isCancel = actionModal.type === 'Cancel';
-
-            // Find the full order object from state
             const orderToUpdate = myOrders.find(o => o._id === actionModal.orderId);
-
-            // Determine the identifier to send to the URL (prefers custom orderId)
             const identifier = orderToUpdate?.orderId || actionModal.orderId;
 
             if (!identifier) {
@@ -89,7 +100,6 @@ const Orders = () => {
                 return;
             }
 
-            // Determine endpoint based on action type
             const endpoint = isCancel ? 'cancel' : 'return';
 
             const response = await axios.put(
@@ -105,19 +115,16 @@ const Orders = () => {
 
             if (response.status === 200) {
                 const newStatus = isCancel ? 'Cancelled' : 'Returned';
-
-                // Update local list state
+                
                 const updatedOrders = myOrders.map(order =>
                     order._id === actionModal.orderId ? { ...order, status: newStatus } : order
                 );
                 setMyOrders(updatedOrders);
 
-                // Update detail view if open
                 if (selectedOrder?._id === actionModal.orderId) {
                     setSelectedOrder({ ...selectedOrder, status: newStatus });
                 }
 
-                // Reset Modal
                 setActionModal({ show: false, type: '', orderId: null });
                 setReason('');
             }
@@ -127,164 +134,350 @@ const Orders = () => {
         }
     };
 
-    const getStatusStyles = (status) => {
+    const getStatusInfo = (status) => {
         const s = status?.toLowerCase();
         switch (s) {
-            case 'delivered': return 'text-emerald-600 bg-emerald-50 border-emerald-100';
+            case 'delivered': 
+                return { color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: CheckCircle2, label: 'Delivered' };
             case 'pending':
-            case 'processing': return 'text-amber-600 bg-amber-50 border-amber-100';
-            case 'cancelled': return 'text-rose-600 bg-rose-50 border-rose-100';
-            case 'returned': return 'text-slate-600 bg-slate-50 border-slate-100';
-            default: return 'text-slate-600 bg-slate-50 border-slate-100';
+            case 'processing': 
+                return { color: 'text-amber-700 bg-amber-50 border-amber-200', icon: Clock, label: 'In Progress' };
+            case 'shipped': 
+                return { color: 'text-blue-700 bg-blue-50 border-blue-200', icon: Truck, label: 'Shipped' };
+            case 'cancelled': 
+                return { color: 'text-rose-700 bg-rose-50 border-rose-200', icon: XCircle, label: 'Cancelled' };
+            case 'returned': 
+                return { color: 'text-slate-700 bg-slate-100 border-slate-300', icon: RefreshCw, label: 'Returned' };
+            default: 
+                return { color: 'text-slate-700 bg-slate-50 border-slate-200', icon: HelpCircle, label: status || 'Unknown' };
         }
     };
 
-    const OrderDetailView = ({ order }) => (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-10">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <button onClick={() => setSelectedOrder(null)} className="group flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-slate-500 hover:text-black transition-all mb-4">
-                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Archives
-                    </button>
-                    <div className="flex items-center gap-4">
-                        <h1 className="text-4xl font-serif">Order {order.orderId || order._id.slice(-8).toUpperCase()}</h1>
-                        <span className={`px-3 py-1 text-[9px] uppercase tracking-widest font-bold border ${getStatusStyles(order.status)}`}>
-                            {order.status}
-                        </span>
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount || 0);
+    };
+
+    const OrderDetailView = ({ order }) => {
+        const statusInfo = getStatusInfo(order.status);
+        const StatusIcon = statusInfo.icon;
+
+        return (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-6">
+                
+                {/* Clean Navigation Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-black/5 pb-4">
+                    <div>
+                        <div className="flex items-center gap-2 text-xs text-textSecondary font-medium mb-2">
+                            <span onClick={() => setSelectedOrder(null)} className="hover:text-accent cursor-pointer">Your Orders</span>
+                            <ChevronRight className="w-3 h-3" />
+                            <span className="text-textPrimary font-semibold">Order Details</span>
+                        </div>
+                        <h1 className="text-2xl font-bold text-textPrimary">
+                            Order Details
+                        </h1>
+                        <p className="text-textSecondary mt-1 text-sm font-medium">Order ID: <span className="text-textPrimary font-bold">{order.orderId || order._id.slice(-8).toUpperCase()}</span></p>
+                    </div>
+
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-textPrimary hover:bg-slate-50 transition-colors shadow-sm">
+                            <Download size={16} /> Download Invoice
+                        </button>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-5 py-3 border border-black/10 text-[9px] uppercase tracking-[0.2em] font-bold hover:bg-black hover:text-white transition-all">
-                        <Download size={14} /> Download Invoice
-                    </button>
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <div className="lg:col-span-8 space-y-6">
-                    <div className="bg-white border border-black/[0.05]">
-                        <div className="p-6 border-b border-black/[0.05] bg-stone-50/50">
-                            <p className="text-[10px] uppercase tracking-widest font-bold opacity-40">Shipment Manifest</p>
-                        </div>
-                        {(order.orderItems || []).map((item, idx) => (
-                            <div key={idx} className="p-8 flex gap-8 items-center border-b border-black/[0.03] last:border-0">
-                                <div className="w-20 aspect-[3/4] bg-stone-100 overflow-hidden">
-                                    <img src={item.image || "https://via.placeholder.com/400"} className="w-full h-full object-cover grayscale" alt="" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* Left Column: Items */}
+                    <div className="lg:col-span-2 space-y-6">
+                        
+                        {/* Status Card (Amazon Style Alert) */}
+                        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusInfo.color.replace('text-', 'bg-').replace(/[0-9]+/, '100')} bg-opacity-50`}>
+                                    <StatusIcon className={`w-5 h-5 ${statusInfo.color.split(' ')[0]}`} />
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-sm font-bold uppercase tracking-wider">{item.name}</h3>
-                                    <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Qty: {item.qty}</p>
+                                <div>
+                                    <h3 className={`text-lg font-bold ${statusInfo.color.split(' ')[0]}`}>{statusInfo.label}</h3>
+                                    <p className="text-xs font-medium text-textSecondary mt-0.5">
+                                        Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                    </p>
                                 </div>
-                                <p className="font-serif text-lg">₹{item.price?.toLocaleString()}</p>
                             </div>
-                        ))}
-                    </div>
-
-                    <div className="flex gap-4">
-                        {(order.status === 'Pending' || order.status === 'Processing') && (
-                            <button onClick={() => setActionModal({ show: true, type: 'Cancel', orderId: order._id })} className="flex-1 border border-rose-100 text-rose-600 py-4 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-rose-600 hover:text-white transition-all">
-                                Request Cancellation
-                            </button>
-                        )}
-                        {order.status === 'Delivered' && canReturn(order.createdAt) && (
-                            <button onClick={() => setActionModal({ show: true, type: 'Return', orderId: order._id })} className="flex-1 border border-black/10 py-4 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-black hover:text-white transition-all">
-                                Initialize Return
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                <div className="lg:col-span-4 space-y-6">
-                    <div className="bg-white border border-black/[0.05] p-8 space-y-8">
-                        <div>
-                            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-slate-500 mb-3">Destination</p>
-                            <p className="text-[11px] uppercase tracking-widest font-medium leading-relaxed">
-                                {order.shippingAddress
-                                    ? `${order.shippingAddress.address}, ${order.shippingAddress.city} - ${order.shippingAddress.pincode}`
-                                    : "Address not provided"}
-                            </p>
-                        </div>
-                        <div className="pt-6 border-t border-black/[0.05]">
-                            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-slate-500 mb-3">Billing Info</p>
-                            <p className="text-[11px] uppercase tracking-widest font-medium">{order.email}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-black text-white p-8">
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-[10px] uppercase tracking-widest opacity-50"><span>Subtotal</span><span>₹{order.itemsPrice?.toLocaleString()}</span></div>
-                            <div className="flex justify-between text-[10px] uppercase tracking-widest opacity-50"><span>Logistics</span><span>{order.shippingPrice > 0 ? `₹${order.shippingPrice}` : 'Complimentary'}</span></div>
-                            <div className="pt-4 border-t border-white/10 flex justify-between items-end">
-                                <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Grand Total</span>
-                                <span className="text-2xl font-serif">₹{order.totalPrice?.toLocaleString()}</span>
+                            
+                            <div className="hidden sm:block text-right">
+                                <button
+                                    onClick={() => {}} // Could link to tracking
+                                    className="text-sm font-bold text-accent hover:underline"
+                                >
+                                    View Tracking History
+                                </button>
                             </div>
                         </div>
+
+                        {/* Items Card */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                                <h3 className="font-bold text-textPrimary text-sm uppercase tracking-wide">
+                                    Items ordered
+                                </h3>
+                            </div>
+                            <div className="divide-y divide-slate-100">
+                                {(order.orderItems || []).map((item, idx) => (
+                                    <div key={idx} className="p-5 flex gap-5 items-center hover:bg-slate-50 transition-colors">
+                                        <div className="w-16 h-16 bg-white rounded-lg border border-slate-100 p-1 shrink-0 flex items-center justify-center">
+                                            <img src={item.image || "https://via.placeholder.com/400"} className="max-w-full max-h-full object-contain" alt={item.name} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-sm font-bold text-textPrimary line-clamp-2 hover:text-accent cursor-pointer">{item.name}</h4>
+                                            <p className="text-xs font-medium text-textSecondary mt-1">Quantity: <span className="font-bold text-textPrimary">{item.qty}</span></p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-bold text-textPrimary">{formatCurrency(item.price)}</p>
+                                            <button className="mt-2 px-3 py-1 bg-[#facc15] hover:bg-[#eab308] text-zinc-900 rounded-md text-xs font-bold transition-all shadow-sm">
+                                                Buy it again
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            {(order.status === 'Pending' || order.status === 'Processing') && (
+                                <button 
+                                    onClick={() => setActionModal({ show: true, type: 'Cancel', orderId: order._id })} 
+                                    className="flex-1 py-3 bg-white border border-slate-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 rounded-lg text-sm font-bold text-textPrimary transition-all flex items-center justify-center gap-2 shadow-sm"
+                                >
+                                    <XCircle size={16} /> Cancel Order
+                                </button>
+                            )}
+                            {order.status === 'Delivered' && canReturn(order.createdAt) && (
+                                <button 
+                                    onClick={() => setActionModal({ show: true, type: 'Return', orderId: order._id })} 
+                                    className="flex-1 py-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-bold text-textPrimary transition-all flex items-center justify-center gap-2 shadow-sm"
+                                >
+                                    <RefreshCw size={16} /> Return or Replace Items
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Summaries */}
+                    <div className="space-y-6">
+                        
+                        {/* Structure matches Amazon's tight right sidebar */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
+                            <h3 className="font-bold text-textPrimary text-sm uppercase tracking-wide border-b border-slate-100 pb-3">Order Summary</h3>
+                            
+                            <div className="flex justify-between text-sm">
+                                <span className="text-textSecondary font-medium">Item(s) Subtotal:</span>
+                                <span className="font-medium text-textPrimary">{formatCurrency(order.itemsPrice)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-textSecondary font-medium">Shipping & Handling:</span>
+                                <span className="font-medium text-textPrimary">{order.shippingPrice > 0 ? formatCurrency(order.shippingPrice) : 'Free'}</span>
+                            </div>
+                            
+                            <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
+                                <span className="font-bold text-textPrimary text-base">Grand Total:</span>
+                                <span className="text-lg font-extrabold text-red-700">{formatCurrency(order.totalPrice)}</span>
+                            </div>
+                        </div>
+
+                        {/* Delivery Details */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                                <h3 className="font-bold text-textPrimary text-sm uppercase tracking-wide">
+                                    Shipping Information
+                                </h3>
+                            </div>
+                            <div className="p-5 space-y-4">
+                                <div>
+                                    <p className="font-bold text-textPrimary text-sm mb-1">{order.user?.name || "Customer"}</p>
+                                    <p className="text-sm font-medium text-textSecondary leading-relaxed">
+                                        {order.shippingAddress?.address}<br/>
+                                        {order.shippingAddress?.city}, {order.shippingAddress?.pincode}<br/>
+                                        {order.shippingAddress?.country || "India"}
+                                    </p>
+                                </div>
+                                <div className="pt-4 border-t border-slate-100">
+                                    <h4 className="text-xs font-bold text-textSecondary uppercase mb-1">Contact Email</h4>
+                                    <p className="text-sm font-medium text-textPrimary">{order.email || "No email provided"}</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            </div>
-        </motion.div>
-    );
+            </motion.div>
+        );
+    };
 
-    if (loading) return <div className="min-h-screen bg-[#FBFBF9] flex items-center justify-center font-serif uppercase tracking-widest opacity-50">Fetching Archives...</div>;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#f1f3f6] flex flex-col items-center justify-center gap-4">
+                <div className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-accent animate-spin" />
+                <p className="text-textSecondary font-medium animate-pulse">Loading your orders...</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-[#FBFBF9] pt-40 pb-20 px-6 md:px-20">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 font-sans text-textPrimary">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
                 <AnimatePresence mode="wait">
                     {!selectedOrder ? (
-                        <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                            <header className="mb-16 flex justify-between items-end">
-                                <div>
-                                    <span className="text-[10px] uppercase tracking-[0.5em] text-slate-500 font-bold block mb-4">Account Archives</span>
-                                    <h1 className="text-5xl md:text-6xl font-serif">Order History</h1>
-                                </div>
-                                <div className="text-right hidden md:block">
-                                    <p className="text-[10px] uppercase tracking-widest font-bold">{myOrders.length} Total Records</p>
+                        <motion.div key="list" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                            
+                            <div className="flex items-center gap-2 text-xs text-textSecondary font-medium mb-4">
+                                <span className="hover:text-accent cursor-pointer">Home</span>
+                                <ChevronRight className="w-3 h-3" />
+                                <span className="hover:text-accent cursor-pointer">Your Account</span>
+                                <ChevronRight className="w-3 h-3" />
+                                <span className="text-textPrimary font-semibold">Your Orders</span>
+                            </div>
+
+                            <header className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-black/5 pb-4">
+                                <h1 className="text-3xl font-bold text-textPrimary">Your Orders</h1>
+                                
+                                {/* Professional Search within Orders */}
+                                <div className="relative w-full md:w-80">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Search className="h-4 w-4 text-slate-400" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg bg-white text-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-shadow shadow-sm font-medium"
+                                        placeholder="Search all orders"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                    <button className="absolute inset-y-0 right-0 px-4 bg-slate-800 text-white font-bold text-xs rounded-r-lg hover:bg-slate-700 transition-colors">
+                                        Search Orders
+                                    </button>
                                 </div>
                             </header>
 
-                            <div className="flex gap-8 mb-12 border-b border-black/5 pb-6 overflow-x-auto no-scrollbar">
-                                {filters.map(f => (
-                                    <button
-                                        key={f}
-                                        onClick={() => setActiveFilter(f)}
-                                        className={`text-[11px] uppercase tracking-[0.2em] font-bold whitespace-nowrap transition-all relative ${activeFilter === f ? 'text-black' : 'text-slate-400 hover:text-black/60'}`}
-                                    >
-                                        {f}
-                                        {activeFilter === f && <motion.div layoutId="tab-underline" className="absolute -bottom-6 left-0 w-full h-[2px] bg-black" />}
-                                    </button>
-                                ))}
+                            {/* Clean Text-based Filters (Amazon Style) */}
+                            <div className="flex gap-6 mb-6 overflow-x-auto no-scrollbar border-b border-slate-200">
+                                {filters.map(f => {
+                                    const isActive = activeFilter === f;
+                                    return (
+                                        <button
+                                            key={f}
+                                            onClick={() => setActiveFilter(f)}
+                                            className={`pb-2 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${
+                                                isActive 
+                                                ? 'border-accent text-textPrimary' 
+                                                : 'border-transparent text-accent hover:text-accentHover hover:border-slate-300 font-medium'
+                                            }`}
+                                        >
+                                            {f === 'All' ? 'Orders' : f}
+                                        </button>
+                                    );
+                                })}
                             </div>
 
+                            <div className="mb-4">
+                                <p className="text-sm font-bold text-textPrimary">
+                                    {filteredOrders.length} orders <span className="font-medium text-textSecondary">placed in</span> {activeFilter}
+                                </p>
+                            </div>
+
+                            {/* Orders List */}
                             <div className="space-y-4">
-                                {filteredOrders.length > 0 ? filteredOrders.map((order) => (
-                                    <div key={order._id} className="bg-white border border-black/[0.03] hover:border-black/10 transition-all p-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                                            <div className="md:col-span-1 aspect-[3/4] bg-stone-50">
-                                                <img src={order.orderItems?.[0]?.image || "https://via.placeholder.com/400"} className="w-full h-full object-cover grayscale opacity-80" alt="" />
-                                            </div>
-                                            <div className="md:col-span-4">
-                                                <p className="text-[9px] uppercase tracking-widest font-bold opacity-30 mb-1">{order.orderId}</p>
-                                                <h3 className="text-sm font-bold uppercase tracking-wider">{order.orderItems?.[0]?.name || "Antaristore Shipment"}</h3>
-                                                <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Processed: {new Date(order.createdAt).toLocaleDateString()}</p>
-                                            </div>
-                                            <div className="md:col-span-3">
-                                                <span className={`inline-block px-3 py-1 text-[8px] uppercase tracking-widest font-bold border ${getStatusStyles(order.status)} mb-2`}>
-                                                    {order.status}
-                                                </span>
-                                                <p className="text-lg font-serif">₹{order.totalPrice?.toLocaleString()}</p>
-                                            </div>
-                                            <div className="md:col-span-4 flex justify-end">
-                                                <button onClick={() => setSelectedOrder(order)} className="px-8 py-3 border border-black/10 text-[9px] uppercase tracking-[0.2em] font-bold hover:bg-black hover:text-white transition-all">
-                                                    View Archival Details
-                                                </button>
-                                            </div>
+                                {filteredOrders.length > 0 ? (
+                                    filteredOrders.map((order) => {
+                                        const statusInfo = getStatusInfo(order.status);
+                                        const StatusIcon = statusInfo.icon;
+
+                                        return (
+                                            <motion.div 
+                                                layout
+                                                key={order._id} 
+                                                className="bg-white border rounded-xl border-slate-200 shadow-sm overflow-hidden"
+                                            >
+                                                {/* Amazon Style Order Header Block */}
+                                                <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-wrap gap-x-8 gap-y-4 text-sm text-textSecondary">
+                                                    <div>
+                                                        <p className="font-medium uppercase text-xs mb-0.5">Order Placed</p>
+                                                        <p className="font-bold text-textPrimary">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium uppercase text-xs mb-0.5">Total</p>
+                                                        <p className="font-bold text-textPrimary">{formatCurrency(order.totalPrice)}</p>
+                                                    </div>
+                                                    <div className="flex-1 text-right">
+                                                        <p className="font-medium uppercase text-xs mb-0.5">Order # {order.orderId || order._id.slice(-8).toUpperCase()}</p>
+                                                        <button 
+                                                            onClick={() => setSelectedOrder(order)}
+                                                            className="font-bold text-accent hover:text-accentHover hover:underline"
+                                                        >
+                                                            View order details
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Content Part */}
+                                                <div className="p-5">
+                                                    <h3 className={`text-lg font-bold mb-4 flex items-center gap-2 ${statusInfo.color.split(' ')[0]}`}>
+                                                        {statusInfo.label}
+                                                    </h3>
+                                                    
+                                                    <div className="flex flex-col md:flex-row gap-6">
+                                                        {/* Thumbnail */}
+                                                        <div className="w-24 h-24 shrink-0 border border-slate-100 rounded bg-white p-1">
+                                                            <img 
+                                                                src={order.orderItems?.[0]?.image || "https://via.placeholder.com/400"} 
+                                                                className="w-full h-full object-contain" 
+                                                                alt={order.orderItems?.[0]?.name} 
+                                                            />
+                                                        </div>
+
+                                                        {/* Product Strings */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <h4 className="text-sm font-bold text-accent hover:text-orange-700 hover:underline cursor-pointer line-clamp-2 mb-1">
+                                                                {order.orderItems?.[0]?.name}
+                                                            </h4>
+                                                            {order.orderItems?.length > 1 && (
+                                                                <p className="text-sm font-medium text-textSecondary">
+                                                                    and {order.orderItems.length - 1} more items...
+                                                                </p>
+                                                            )}
+                                                            
+                                                            <div className="flex flex-wrap gap-3 mt-4">
+                                                                <button 
+                                                                    className="px-4 py-2 bg-[#facc15] hover:bg-[#eab308] text-zinc-900 rounded-lg text-sm font-bold transition-all shadow-sm"
+                                                                >
+                                                                    Buy it again
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => setSelectedOrder(order)}
+                                                                    className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-textPrimary rounded-lg text-sm font-bold transition-all shadow-sm"
+                                                                >
+                                                                    Track package
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })
+                                ) : (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
+                                        className="py-16 text-center bg-white rounded-xl border border-slate-200 shadow-sm"
+                                    >
+                                        <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Package className="w-8 h-8 text-textSecondary" />
                                         </div>
-                                    </div>
-                                )) : (
-                                    <div className="py-20 text-center border border-dashed border-black/10">
-                                        <p className="text-[10px] uppercase tracking-widest font-bold opacity-20">No matching archives found</p>
-                                    </div>
+                                        <h3 className="text-lg font-bold text-textPrimary mb-1">Looks like you don't have any orders here</h3>
+                                        <p className="text-textSecondary text-sm font-medium">
+                                            {activeFilter === 'All' ? "Checkout our latest products and place your first order." : `There are no ${activeFilter.toLowerCase()} orders.`}
+                                        </p>
+                                    </motion.div>
                                 )}
                             </div>
                         </motion.div>
@@ -294,21 +487,59 @@ const Orders = () => {
                 </AnimatePresence>
             </div>
 
+            {/* Action Modal */}
             <AnimatePresence>
                 {actionModal.show && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-[#FBFBF9]/95 backdrop-blur-sm flex items-center justify-center p-6">
-                        <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border border-black/10 p-12 max-w-lg w-full relative">
-                            <button onClick={() => setActionModal({ show: false, type: '', orderId: null })} className="absolute top-8 right-8 p-2 opacity-20 hover:opacity-100 transition-opacity"><XCircle size={18} /></button>
-                            <h2 className="text-[13px] uppercase tracking-[0.4em] font-bold mb-6">{actionModal.type} Request</h2>
+                    <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }} 
+                        className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+                            animate={{ scale: 1, opacity: 1, y: 0 }} 
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }} 
+                            className="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+                        >
+                            <div className={`absolute top-0 left-0 right-0 h-1.5 ${actionModal.type === 'Cancel' ? 'bg-red-500' : 'bg-slate-800'}`} />
+                            
+                            <div className="flex justify-between items-center mb-6 mt-2">
+                                <div className={`flex items-center gap-3 ${actionModal.type === 'Cancel' ? 'text-red-500' : 'text-slate-800'}`}>
+                                    <div className={`${actionModal.type === 'Cancel' ? 'bg-red-50' : 'bg-slate-100'} p-2 rounded-lg border ${actionModal.type === 'Cancel' ? 'border-red-100' : 'border-slate-200'}`}>
+                                        {actionModal.type === 'Cancel' ? <AlertCircle className="w-5 h-5" /> : <RefreshCw className="w-5 h-5" />}
+                                    </div>
+                                    <h2 className="text-xl font-bold text-textPrimary">{actionModal.type} Order</h2>
+                                </div>
+                                <button onClick={() => setActionModal({ show: false, type: '', orderId: null })} className="text-textSecondary hover:text-textPrimary hover:bg-slate-100 p-2 rounded-lg transition-colors">
+                                    <XCircle size={20} />
+                                </button>
+                            </div>
+                            
                             <textarea
-                                className="w-full border-b border-black/10 py-4 text-[11px] uppercase tracking-widest outline-none focus:border-black min-h-[140px] resize-none mb-10 bg-transparent"
-                                placeholder={`SPECIFY REASON FOR ${actionModal.type.toUpperCase()}...`}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-textPrimary placeholder:text-textSecondary/70 focus:border-accent focus:bg-white focus:ring-4 focus:ring-accent/10 outline-none transition-all resize-none h-32 mb-6"
+                                placeholder={`Please provide a reason to ${actionModal.type.toLowerCase()}...`}
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                             />
-                            <button onClick={handleActionSubmit} disabled={!reason.trim()} className="w-full bg-black text-white py-5 text-[10px] uppercase tracking-[0.3em] font-bold hover:bg-zinc-800 transition-all disabled:opacity-10">
-                                Transmit Request
-                            </button>
+
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={() => setActionModal({ show: false, type: '', orderId: null })} 
+                                    className="flex-1 px-4 py-3 rounded-lg font-bold text-textSecondary hover:text-textPrimary bg-white border border-slate-200 hover:bg-slate-50 transition-colors"
+                                >
+                                    Dismiss
+                                </button>
+                                <button 
+                                    onClick={handleActionSubmit} 
+                                    disabled={!reason.trim()} 
+                                    className={`flex-1 px-4 py-3 rounded-lg font-bold text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        actionModal.type === 'Cancel' ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-900'
+                                    }`}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, CheckCircle2, X, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Package, Truck, Home, X, AlertCircle, Check, XCircle, Box } from 'lucide-react';
 import axios from 'axios';
 
 const TrackOrder = () => {
@@ -13,14 +13,17 @@ const TrackOrder = () => {
 
     const location = useLocation();
 
-    const containerVars = {
-        hidden: { opacity: 0, y: 15 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5, staggerChildren: 0.12 } }
-    };
-
-    const itemVars = {
-        hidden: { opacity: 0, x: -8 },
-        visible: { opacity: 1, x: 0 }
+    // Map backend status to nice UI labels
+    const getStatusLabel = (status) => {
+        if (status === 'Cancelled') return 'Cancelled';
+        const statusMap = {
+            'Pending': 'Order Placed',
+            'Processing': 'Processing',
+            'Shipped': 'Shipped',
+            'Out for Delivery': 'Out for Delivery',
+            'Delivered': 'Delivered'
+        };
+        return statusMap[status] || status;
     };
 
     const performTracking = useCallback(async (id) => {
@@ -32,7 +35,7 @@ const TrackOrder = () => {
             const token = localStorage.getItem('token');
 
             if (!token) {
-                alert("Please log in to track your acquisitions.");
+                alert("Please log in to track your order.");
                 setLoading(false);
                 return;
             }
@@ -43,51 +46,31 @@ const TrackOrder = () => {
                 }
             });
 
-            const statusMap = {
-                'Pending': 0,
-                'Processing': 1,
-                'Shipped': 2,
-                'Out for Delivery': 3, // ADDED THIS
-                'Delivered': 4,        // BUMPED THIS TO 4
-                'Cancelled': -1
-            };
-
-            const currentStep = statusMap[data.status] || 0;
+            // Map status logically to steps index
+            let currentStepIndex = 0;
+            if (data.status === 'Cancelled') {
+                currentStepIndex = -1;
+            } else if (data.status === 'Pending' || data.status === 'Processing') {
+                currentStepIndex = 0;
+            } else if (data.status === 'Shipped') {
+                currentStepIndex = 1;
+            } else if (data.status === 'Out for Delivery') {
+                currentStepIndex = 2;
+            } else if (data.status === 'Delivered') {
+                currentStepIndex = 3;
+            }
 
             setFoundOrder({
                 orderId: data.orderId,
-                city: data.shippingAddress.city.toUpperCase(),
-                // UPDATED: Added Out for Delivery to the text logic
-                expectedDelivery: data.status === 'Delivered' ? "ARRIVED" :
-                    (data.status === 'Cancelled' ? "TERMINATED" :
-                        (data.status === 'Out for Delivery' ? "NEAR DESTINATION" : "IN TRANSIT")),
+                city: data.shippingAddress.city,
                 status: data.status,
-                timeline: [
-                    {
-                        label: 'Confirmed',
-                        date: new Date(data.createdAt).toLocaleDateString(),
-                        time: new Date(data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        completed: currentStep >= 0 || data.status === 'Cancelled'
-                    },
-                    {
-                        label: 'Shipped',
-                        date: data.shippedAt ? new Date(data.shippedAt).toLocaleDateString() : '--',
-                        time: '--',
-                        completed: currentStep >= 2
-                    },
-                    {
-                        label: 'Out for Delivery', // UPDATED: Logic now checks currentStep
-                        date: '--',
-                        time: '--',
-                        completed: currentStep >= 3
-                    },
-                    {
-                        label: 'Delivered',
-                        date: data.deliveredAt ? new Date(data.deliveredAt).toLocaleDateString() : '--',
-                        time: '--',
-                        completed: currentStep >= 4
-                    }
-                ]
+                currentStepIndex,
+                dates: {
+                    ordered: data.createdAt,
+                    shipped: data.shippedAt,
+                    delivered: data.deliveredAt,
+                },
+                items: data.orderItems || []
             });
         } catch (error) {
             console.error("Tracking Error:", error);
@@ -107,27 +90,21 @@ const TrackOrder = () => {
         }
     }, [location.search, performTracking]);
 
-    // UPDATED: Now connects to Backend to persist changes
     const handleCancelOrder = async () => {
         if (!cancelReason.trim()) return;
 
         try {
             const token = localStorage.getItem('token');
 
-            // Call the PUT route we added to orderRoutes.js
             await axios.put(
                 `http://localhost:5000/api/orders/track/${foundOrder.orderId}/cancel`,
                 { reason: cancelReason },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            // Update UI only after database confirms success
-            setFoundOrder(prev => ({ ...prev, status: 'Cancelled', expectedDelivery: 'TERMINATED' }));
+            setFoundOrder(prev => ({ ...prev, status: 'Cancelled', currentStepIndex: -1 }));
             setIsCancelling(false);
             setCancelReason('');
-            alert("Acquisition successfully terminated in our records.");
 
         } catch (error) {
             console.error("Cancellation Error:", error);
@@ -135,158 +112,240 @@ const TrackOrder = () => {
         }
     };
 
-    return (
-        <div className="min-h-screen bg-[#FBFBF9] pt-40 pb-20 px-6 text-textPrimary">
-            <div className="max-w-2xl mx-auto">
-                <header className="mb-20">
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-10 text-center">
-                        <span className="text-[10px] uppercase tracking-[0.5em] text-textSecondary/60 font-bold block mb-4">Logistics Interface</span>
-                        <h1 className="text-5xl font-serif">Track Acquisition</h1>
-                    </motion.div>
+    const steps = [
+        { label: 'Order Placed', icon: Package, description: 'We have received your order' },
+        { label: 'Shipped', icon: Truck, description: 'Your package is on the way' },
+        { label: 'Out for Delivery', icon: MapPin, description: 'Package is near your location' },
+        { label: 'Delivered', icon: Home, description: 'Package has been delivered' }
+    ];
 
-                    <div className="relative group">
+    return (
+        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 font-sans text-slate-900">
+            
+            {/* Standard White Tracking Banner */}
+            <div className="bg-white border-b border-black/5 shadow-sm mb-8 relative">
+                <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 text-center">
+                    <div className="w-16 h-16 bg-blue-50 text-blue-600 flex items-center justify-center rounded-full mx-auto mb-4">
+                        <Box className="w-8 h-8" />
+                    </div>
+                    <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Track Your Package</h1>
+                    <p className="text-slate-500 font-medium mb-8">Enter your Order ID to get real-time tracking updates.</p>
+
+                    <div className="relative max-w-xl mx-auto flex items-center bg-white border-2 border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-500 transition-colors shadow-sm">
                         <input
                             type="text"
-                            placeholder="REFERENCE ID (E.G. ANT-99281)"
-                            className="w-full bg-white border border-black/[0.05] px-8 py-5 text-[11px] tracking-[0.3em] outline-none focus:border-black transition-all uppercase font-bold"
+                            placeholder="e.g. ORD-2026..."
+                            className="flex-1 bg-transparent px-5 py-4 text-sm font-bold text-slate-900 outline-none"
                             value={searchId}
                             onChange={(e) => setSearchId(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && performTracking(searchId)}
                         />
                         <button
                             onClick={() => performTracking(searchId)}
-                            className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 group-hover:gap-3 transition-all"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 font-bold text-sm transition-colors flex items-center gap-2 h-full"
                         >
-                            <span className="text-[9px] uppercase tracking-widest font-bold opacity-0 group-hover:opacity-100 transition-opacity">Locate</span>
-                            <Search className="w-4 h-4" />
+                            Track <Search className="w-4 h-4 hidden sm:block" />
                         </button>
                     </div>
-                </header>
+                </div>
+            </div>
 
+            <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Loading State */}
                 <AnimatePresence mode="wait">
-                    {loading ? (
-                        <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="py-20 text-center">
-                            <div className="w-10 h-[1px] bg-black mx-auto animate-pulse" />
+                    {loading && (
+                        <motion.div 
+                            key="loading" 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+                            className="flex flex-col items-center py-20 gap-4"
+                        >
+                            <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-blue-600 animate-spin" />
+                            <p className="text-slate-500 font-bold">Locating package details...</p>
                         </motion.div>
-                    ) : foundOrder && (
+                    )}
+
+                    {/* Results State */}
+                    {foundOrder && !loading && (
                         <motion.div
                             key="results"
-                            variants={containerVars}
-                            initial="hidden"
-                            animate="visible"
-                            exit="hidden"
-                            className="space-y-8"
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+                            className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-black/5"
                         >
-                            <div className="bg-white border border-black/[0.03] p-10 flex flex-col md:flex-row justify-between items-start md:items-end">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-6 gap-4">
                                 <div>
-                                    <p className="text-[9px] uppercase tracking-[0.3em] text-textSecondary font-bold mb-2">Acquisition Status</p>
-                                    <h2 className={`text-3xl font-serif ${foundOrder.status === 'Cancelled' ? 'text-rose-500' : ''}`}>
-                                        {foundOrder.expectedDelivery}
+                                    <h2 className="text-xl font-bold flex items-center gap-3 text-slate-900">
+                                        Order #{foundOrder.orderId}
+                                        {foundOrder.status === 'Cancelled' ? (
+                                            <span className="bg-red-50 text-red-600 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 border border-red-100">
+                                                <XCircle className="w-4 h-4" /> Cancelled
+                                            </span>
+                                        ) : (
+                                            <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 border border-emerald-100">
+                                                <Check className="w-4 h-4" /> Active
+                                            </span>
+                                        )}
                                     </h2>
-                                    <p className="text-[10px] uppercase tracking-widest mt-2 opacity-40">Destination: {foundOrder.city}</p>
+                                    <p className="text-slate-500 text-sm flex items-center gap-2 mt-2 font-medium">
+                                        <MapPin className="w-4 h-4 text-slate-400" /> Delivering to: <span className="text-slate-800 font-bold capitalize">{foundOrder.city}</span>
+                                    </p>
                                 </div>
+
                                 {foundOrder.status === "Pending" && (
                                     <button
                                         onClick={() => setIsCancelling(true)}
-                                        className="mt-6 md:mt-0 text-[9px] uppercase tracking-widest font-bold text-rose-500/50 hover:text-rose-600 transition-colors py-2 border-b border-rose-500/10 hover:border-rose-600/30"
+                                        className="text-red-600 hover:text-white border-2 border-red-100 hover:bg-red-600 hover:border-red-600 px-6 py-2.5 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 shadow-sm"
                                     >
-                                        Terminate Order
+                                        <X className="w-4 h-4" /> Cancel Order
                                     </button>
                                 )}
                             </div>
 
-                            {/* Logic to hide timeline if cancelled, or show with dimmed steps */}
-                            <div className="bg-white border border-black/[0.03] p-10 md:p-16">
-                                <div className="space-y-16">
-                                    {foundOrder.timeline.map((step, idx) => (
-                                        <motion.div key={idx} variants={itemVars} className={`flex gap-10 relative ${foundOrder.status === 'Cancelled' && idx > 0 ? 'opacity-20' : ''}`}>
-                                            {idx !== foundOrder.timeline.length - 1 && (
-                                                <div className="absolute left-[10px] top-8 w-[1px] h-16 bg-black/[0.03]">
-                                                    <motion.div
-                                                        initial={{ height: 0 }}
-                                                        animate={{ height: step.completed ? '100%' : '0%' }}
-                                                        transition={{ duration: 0.8, ease: "easeInOut" }}
-                                                        className="bg-black/20 w-full"
-                                                    />
-                                                </div>
-                                            )}
+                            {/* Tracking Stepper */}
+                            <div className="py-12 md:py-16">
+                                <div className="relative">
+                                    <div className="absolute top-1/2 left-[10%] right-[10%] h-1 bg-slate-100 -translate-y-1/2 rounded-full hidden md:block" />
+                                    
+                                    {foundOrder.status !== 'Cancelled' && (
+                                        <div 
+                                            className="absolute top-1/2 left-[10%] h-1 bg-emerald-500 -translate-y-1/2 rounded-full hidden md:block transition-all duration-1000 ease-out" 
+                                            style={{ width: `${Math.max(0, (foundOrder.currentStepIndex / (steps.length - 1)) * 80)}%` }} 
+                                        />
+                                    )}
 
-                                            <div className="relative z-10 flex flex-col items-center">
-                                                {step.completed ? (
-                                                    <CheckCircle2 className="w-5 h-5 text-black" strokeWidth={1.5} />
-                                                ) : (
-                                                    <div className="w-5 h-5 rounded-full border border-black/10 flex items-center justify-center">
-                                                        <div className="w-1 h-1 bg-black/10 rounded-full" />
+                                    <div className="flex flex-col md:flex-row justify-between relative z-10 gap-8 md:gap-0">
+                                        {steps.map((step, idx) => {
+                                            const isCompleted = foundOrder.status !== 'Cancelled' && idx <= foundOrder.currentStepIndex;
+                                            const isCurrent = foundOrder.status !== 'Cancelled' && idx === foundOrder.currentStepIndex;
+                                            const Icon = step.icon;
+                                            
+                                            return (
+                                                <div key={idx} className="flex md:flex-col items-center gap-4 md:gap-4 md:w-1/4 relative group">
+                                                    {idx < steps.length - 1 && (
+                                                        <div className="absolute left-6 top-14 bottom-[-2rem] w-1 bg-slate-100 md:hidden rounded-full">
+                                                            {foundOrder.status !== 'Cancelled' && idx < foundOrder.currentStepIndex && (
+                                                                <div className="w-full h-full bg-emerald-500 rounded-full" />
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 border-[3px] transition-all duration-500 shadow-sm z-10 bg-white
+                                                        ${foundOrder.status === 'Cancelled' ? 'border-slate-200 text-slate-300' :
+                                                        isCompleted ? 'border-emerald-500 text-emerald-600 shadow-[0_0_0_4px_rgba(16,185,129,0.1)]' : 
+                                                        'border-slate-200 text-slate-300'}`}>
+                                                        {isCompleted && !isCurrent ? <Check className="w-7 h-7" strokeWidth={3} /> : <Icon className="w-6 h-6" strokeWidth={isCompleted ? 2.5 : 2} />}
                                                     </div>
-                                                )}
-                                            </div>
-
-                                            <div className="flex-1 flex justify-between items-start border-b border-black/[0.02] pb-8">
-                                                <div>
-                                                    <h3 className={`text-[11px] uppercase tracking-[0.3em] font-bold ${step.completed ? 'text-black' : 'text-black/20'}`}>
-                                                        {step.label}
-                                                    </h3>
-                                                    <p className="text-[9px] text-textSecondary tracking-widest mt-2 uppercase">
-                                                        {step.completed ? 'Verified & Scanned' : 'Awaiting Processing'}
-                                                    </p>
+                                                    
+                                                    <div className="text-left md:text-center">
+                                                        <h3 className={`font-bold text-sm mb-1 transition-colors ${
+                                                            foundOrder.status === 'Cancelled' ? 'text-slate-400' :
+                                                            isCompleted ? 'text-slate-900' : 'text-slate-400'
+                                                        }`}>
+                                                            {step.label}
+                                                        </h3>
+                                                        <p className={`text-xs max-w-[140px] hidden md:block mx-auto font-medium ${
+                                                            foundOrder.status === 'Cancelled' ? 'text-slate-300' :
+                                                            isCompleted ? 'text-emerald-600' : 'text-slate-400'
+                                                        }`}>
+                                                            {step.description}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className={`text-[10px] font-bold tracking-tighter ${step.completed ? 'text-black' : 'text-black/10'}`}>
-                                                        {step.time !== '--' ? step.time : ''}
-                                                    </p>
-                                                    <p className="text-[9px] text-textSecondary uppercase tracking-widest mt-1">
-                                                        {step.date !== '--' ? step.date : ''}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
-                <AnimatePresence>
-                    {isCancelling && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-50 bg-[#FBFBF9]/90 backdrop-blur-sm flex items-center justify-center p-6"
-                        >
-                            <motion.div
-                                initial={{ scale: 0.98, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                className="bg-white border border-black/5 p-12 max-w-lg w-full shadow-2xl"
-                            >
-                                <div className="flex items-center justify-between mb-10">
-                                    <div className="flex items-center gap-3 text-rose-500">
-                                        <AlertCircle className="w-4 h-4" />
-                                        <h2 className="text-[11px] uppercase tracking-[0.4em] font-bold">Termination</h2>
+                            {/* Additional Information Box */}
+                            {foundOrder.status !== 'Cancelled' && (
+                                <div className="bg-slate-50/80 rounded-xl p-6 mt-4 border border-slate-100">
+                                    <h3 className="font-bold text-slate-900 mb-4 border-b border-slate-200 pb-3">Tracking History</h3>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-600 font-bold">Order Received</span>
+                                            <span className="font-bold text-slate-900">
+                                                {new Date(foundOrder.dates.ordered).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' })}
+                                            </span>
+                                        </div>
+                                        {foundOrder.dates.shipped && (
+                                            <div className="flex justify-between items-center text-sm pt-4 border-t border-slate-200/60">
+                                                <span className="text-slate-600 font-bold">Package Dispatched</span>
+                                                <span className="font-bold text-slate-900">
+                                                    {new Date(foundOrder.dates.shipped).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {foundOrder.dates.delivered && (
+                                            <div className="flex justify-between items-center text-sm pt-4 border-t border-slate-200/60">
+                                                <span className="text-slate-600 font-bold">Successfully Delivered</span>
+                                                <span className="font-bold text-emerald-600">
+                                                    {new Date(foundOrder.dates.delivered).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour:'2-digit', minute:'2-digit' })}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <button onClick={() => setIsCancelling(false)} className="opacity-20 hover:opacity-100 transition-opacity"><X size={18} /></button>
                                 </div>
+                            )}
 
-                                <textarea
-                                    className="w-full border-b border-black/10 py-4 text-[11px] uppercase tracking-[0.4em] outline-none focus:border-black transition-colors min-h-[120px] resize-none mb-10 bg-transparent placeholder:opacity-30"
-                                    placeholder="STATE REASON FOR CANCELLATION..."
-                                    value={cancelReason}
-                                    onChange={(e) => setCancelReason(e.target.value)}
-                                />
-
-                                <button
-                                    onClick={handleCancelOrder}
-                                    disabled={!cancelReason.trim()}
-                                    className="w-full bg-black text-white py-5 text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-rose-600 transition-all disabled:opacity-10"
-                                >
-                                    Confirm Termination
-                                </button>
-                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Cancel Modal Window */}
+            <AnimatePresence>
+                {isCancelling && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3 text-red-600">
+                                    <div className="bg-red-50 p-2 rounded-full">
+                                        <AlertCircle className="w-6 h-6" />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-slate-900">Cancel Order</h2>
+                                </div>
+                                <button onClick={() => setIsCancelling(false)} className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-2 rounded-full transition-colors">
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 mb-8">
+                                <p className="text-slate-600 text-sm font-medium">
+                                    Are you sure you want to cancel this order? This action cannot be undone. Please let us know why you are cancelling.
+                                </p>
+                                <textarea
+                                    className="w-full bg-white border-2 border-slate-200 rounded-xl p-4 text-sm text-slate-900 font-medium focus:border-red-500 outline-none transition-colors resize-none h-32"
+                                    placeholder="Order by mistake, taking too long, etc."
+                                    value={cancelReason}
+                                    onChange={(e) => setCancelReason(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsCancelling(false)}
+                                    className="flex-1 px-4 py-3.5 rounded-xl font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                >
+                                    Keep Order
+                                </button>
+                                <button
+                                    onClick={handleCancelOrder}
+                                    disabled={!cancelReason.trim()}
+                                    className="flex-1 px-4 py-3.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                                >
+                                    Confirm Cancel
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

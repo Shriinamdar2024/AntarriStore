@@ -1,94 +1,99 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Instagram, Twitter, Facebook, ArrowUpRight, Mail } from 'lucide-react';
+import { Mail, Facebook, Twitter, Instagram, CreditCard, ShieldCheck, Truck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     const footerLinks = [
-        { title: "Collections", links: ["The Silk Series", "Noir Essentials", "Summer Ethereal", "Heritage Knits"] },
-        { title: "Support", links: ["Shipping", "Size Guide", "Track Order", "Contact"] },
-        { title: "Brand", links: ["Our Story", "Sustainability", "Journal"] }
+        { title: "Get to Know Us", links: ["About Us", "Careers", "Press Releases", "Antari Science"] },
+        { title: "Connect with Us", links: ["Facebook", "Twitter", "Instagram", "LinkedIn"] },
+        { title: "Make Money with Us", links: ["Sell on Antari", "Protect and Build Your Brand", "Become an Affiliate", "Advertise Your Products"] },
+        { title: "Let Us Help You", links: ["Your Account", "Returns Centre", "100% Purchase Protection", "Help"] }
     ];
 
     return (
-        <footer className="relative bg-[#FBFBF9] pt-24 pb-12 px-6 sm:px-12 md:px-20 border-t border-black/5 overflow-hidden">
-
-            {/* Subtle Background Accent */}
-            <div className="absolute top-0 right-0 w-[25vw] h-[25vw] bg-accent/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-            <div className="max-w-7xl mx-auto relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20">
-
-                    {/* Brand & Newsletter Section */}
-                    <div className="lg:col-span-5 space-y-8">
-                        <motion.h2
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            className="text-4xl md:text-5xl font-serif text-textPrimary leading-tight"
-                        >
-                            Elevating the <br />
-                            <span className="italic font-light text-accent">Everyday</span>
-                        </motion.h2>
-
-                        <div className="relative max-w-sm group">
-                            <input
-                                type="email"
-                                placeholder="Join the newsletter"
-                                className="w-full bg-transparent border-b border-tertiary py-3 pr-10 outline-none focus:border-accent transition-all text-sm font-light"
-                            />
-                            <button className="absolute right-0 top-1/2 -translate-y-1/2 text-textPrimary hover:text-accent transition-colors">
-                                <Mail className="w-4 h-4" />
-                            </button>
+        <footer className="bg-[#232F3E] font-sans text-white mt-auto">
+            
+            {/* Value Proposition Strip */}
+            <div className="bg-[#37475A] border-b border-slate-700">
+                <div className="max-w-[1500px] mx-auto px-4 py-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center text-center divide-y md:divide-y-0 md:divide-x divide-slate-600">
+                        <div className="flex flex-col items-center px-4">
+                            <Truck className="w-8 h-8 text-yellow-400 mb-3" />
+                            <h4 className="font-bold mb-1">Fast & Reliable Delivery</h4>
+                            <p className="text-xs text-slate-300">Free delivery on eligible orders</p>
+                        </div>
+                        <div className="flex flex-col items-center px-4 pt-6 md:pt-0">
+                            <ShieldCheck className="w-8 h-8 text-yellow-400 mb-3" />
+                            <h4 className="font-bold mb-1">100% Secure Payments</h4>
+                            <p className="text-xs text-slate-300">All major payment methods accepted</p>
+                        </div>
+                        <div className="flex flex-col items-center px-4 pt-6 md:pt-0">
+                            <CreditCard className="w-8 h-8 text-yellow-400 mb-3" />
+                            <h4 className="font-bold mb-1">Easy Returns Policy</h4>
+                            <p className="text-xs text-slate-300">Hassle-free replacement guarantee</p>
                         </div>
                     </div>
-
-                    {/* Links Section */}
-                    <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
-                        {footerLinks.map((section, idx) => (
-                            <div key={section.title}>
-                                <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-accent mb-6">
-                                    {section.title}
-                                </h4>
-                                <ul className="space-y-3">
-                                    {section.links.map(link => (
-                                        <li key={link}>
-                                            <a href="#" className="text-[13px] text-textSecondary hover:text-textPrimary transition-colors flex items-center group">
-                                                {link}
-                                                <ArrowUpRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-all" />
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
                 </div>
+            </div>
 
-                {/* Minimal Bottom Bar */}
-                <div className="pt-8 border-t border-black/5 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p className="text-[10px] uppercase tracking-widest text-textSecondary font-medium">
-                        © {currentYear} ANTARRISTORE. All Rights Reserved.
-                    </p>
+            {/* Back to Top */}
+            <a href="#" className="block bg-[#485769] hover:bg-[#5b6e85] text-center py-4 text-sm font-medium transition-colors">
+                Back to top
+            </a>
 
-                    <div className="flex space-x-6">
-                        {[
-                            { icon: <Instagram className="w-4 h-4" />, link: "#" },
-                            { icon: <Twitter className="w-4 h-4" />, link: "#" },
-                            { icon: <Facebook className="w-4 h-4" />, link: "#" }
-                        ].map((social, i) => (
-                            <motion.a
-                                key={i}
-                                whileHover={{ y: -2 }}
-                                href={social.link}
-                                className="text-textSecondary hover:text-accent transition-colors"
-                            >
-                                {social.icon}
-                            </motion.a>
-                        ))}
-                    </div>
+            {/* Main Links Area */}
+            <div className="max-w-[1000px] mx-auto px-4 py-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+                    {footerLinks.map((section) => (
+                        <div key={section.title}>
+                            <h3 className="font-bold mb-4 text-base">{section.title}</h3>
+                            <ul className="space-y-2.5">
+                                {section.links.map(link => (
+                                    <li key={link}>
+                                        <a href="#" className="text-sm text-slate-300 hover:text-white hover:underline transition-all">
+                                            {link}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
                 </div>
+            </div>
+
+            {/* Divider Logo Area */}
+            <div className="border-t border-slate-700 py-8 text-center flex flex-col items-center">
+                <Link to="/" className="text-2xl font-extrabold tracking-tight flex items-center gap-2 mb-4">
+                    ANTARI<span className="text-yellow-400 shadow-sm">STORE</span>
+                </Link>
+                <div className="flex flex-wrap justify-center gap-4 text-xs text-slate-300">
+                    <span className="border border-slate-500 px-3 py-1.5 rounded flex items-center gap-2 hover:bg-slate-700 cursor-pointer transition">
+                        <Mail className="w-3 h-3" /> Subscribe
+                    </span>
+                    <span className="border border-slate-500 px-3 py-1.5 rounded flex items-center gap-2 hover:bg-slate-700 cursor-pointer transition">
+                        English
+                    </span>
+                    <span className="border border-slate-500 px-3 py-1.5 rounded flex items-center gap-2 hover:bg-slate-700 cursor-pointer transition">
+                        ₹ INR - Indian Rupee
+                    </span>
+                    <span className="border border-slate-500 px-3 py-1.5 rounded flex items-center gap-2 hover:bg-slate-700 cursor-pointer transition">
+                        India
+                    </span>
+                </div>
+            </div>
+
+            {/* Final Legal Bar */}
+            <div className="bg-[#131A22] py-8 px-4 text-center">
+                <div className="flex flex-wrap justify-center gap-4 text-xs text-slate-300 mb-2">
+                    <a href="#" className="hover:underline">Conditions of Use & Sale</a>
+                    <a href="#" className="hover:underline">Privacy Notice</a>
+                    <a href="#" className="hover:underline">Interest-Based Ads</a>
+                </div>
+                <p className="text-xs text-slate-400">
+                    © 2016-{currentYear}, AntariStore.com, Inc. or its affiliates
+                </p>
             </div>
         </footer>
     );
