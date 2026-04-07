@@ -96,7 +96,7 @@ const CustomerLayout = ({ isMenuOpen, setIsMenuOpen, isSearchOpen, setIsSearchOp
     <BackgroundDecor />
     <NavbarWrapper setIsMenuOpen={setIsMenuOpen} setIsSearchOpen={setIsSearchOpen} />
     <DrawerWrapper />
-    <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+    <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} onSearchClick={() => setIsSearchOpen(true)} />
     <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     <NewsletterModal />
 

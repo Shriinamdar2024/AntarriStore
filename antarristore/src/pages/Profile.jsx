@@ -131,9 +131,37 @@ const Profile = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
-                    {/* Navigation Sidebar */}
-                    <nav className="lg:col-span-3 space-y-2">
-                        <div className="bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden p-2">
+                    {/* Navigation Sidebar — vertical on lg+, horizontal tab strip on mobile */}
+                    <nav className="lg:col-span-3">
+                        {/* Mobile Tab Strip */}
+                        <div className="flex lg:hidden overflow-x-auto no-scrollbar bg-white rounded-xl shadow-sm border border-black/5 p-1 gap-1 mb-2">
+                            {[
+                                { icon: <User className="w-4 h-4" />, label: 'Personal Info' },
+                                { icon: <MapPin className="w-4 h-4" />, label: 'Shipping Address' },
+                                { icon: <CreditCard className="w-4 h-4" />, label: 'Billing Details' },
+                            ].map((item) => (
+                                <button
+                                    key={item.label}
+                                    onClick={() => setActiveTab(item.label)}
+                                    className={`flex items-center gap-2 shrink-0 px-3 py-2 rounded-lg transition-colors text-sm font-bold whitespace-nowrap ${
+                                        activeTab === item.label ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    {item.icon}
+                                    {item.label}
+                                </button>
+                            ))}
+                            <button
+                                onClick={handleSignOut}
+                                className="flex items-center gap-2 shrink-0 px-3 py-2 rounded-lg transition-colors text-sm font-bold whitespace-nowrap text-red-500 hover:bg-red-50"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                Sign Out
+                            </button>
+                        </div>
+
+                        {/* Desktop Vertical Sidebar */}
+                        <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-black/5 overflow-hidden p-2">
                             {[
                                 { icon: <User className="w-5 h-5" />, label: 'Personal Info' },
                                 { icon: <MapPin className="w-5 h-5" />, label: 'Shipping Address' },
