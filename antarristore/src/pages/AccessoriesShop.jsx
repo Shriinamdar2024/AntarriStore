@@ -18,11 +18,7 @@ const AccessoriesShop = () => {
     useEffect(() => {
         const fetchAccessories = async () => {
             try {
-                const baseURL = window.location.hostname === 'localhost'
-                    ? 'https://antarri-backend.onrender.com'
-                    : 'https://shrirupportfolio.onrender.com';
-
-                const response = await axios.get(`${baseURL}/api/products/public`);
+                const response = await axios.get('https://antarri-backend.onrender.com/api/products/public');
 
                 // Filter specifically for the category name used in AdminUpload
                 const accessoryData = response.data.filter(item =>

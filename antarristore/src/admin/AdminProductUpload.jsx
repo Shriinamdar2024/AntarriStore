@@ -123,12 +123,7 @@ const AdminProductUpload = () => {
         });
 
         try {
-            // Using the live Render URL if available, otherwise localhost
-            const baseURL = window.location.hostname === 'localhost'
-                ? 'https://antarri-backend.onrender.com'
-                : 'https://shrirupportfolio.onrender.com'; // Based on your project history
-
-            await axios.post(`${baseURL}/api/products/add`, formData, {
+            await axios.post(`https://antarri-backend.onrender.com/api/products/add`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
