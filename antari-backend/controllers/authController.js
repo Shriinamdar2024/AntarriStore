@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
+const getOtpTemplate = require('../utils/emailTemplate');
 
 // Configure the Mail Transporter
 const transporter = nodemailer.createTransport({
@@ -31,12 +32,12 @@ exports.login = async (req, res) => {
         user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 min expiry
         await user.save();
 
-        // Send Email
+        // Send styled HTML email
         const mailOptions = {
             from: `"AntariStore Admin" <${process.env.EMAIL_USER}>`,
             to: user.email,
-            subject: 'Staff Access: Your Security Code',
-            text: `Your one-time security code is: ${otp}. This code expires in 10 minutes.`,
+            subject: 'AntariStore — Admin Sign-In Code',
+            html: getOtpTemplate(otp, "login"),
         };
 
         await transporter.sendMail(mailOptions);
