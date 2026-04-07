@@ -324,7 +324,7 @@ const Orders = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 font-sans text-textPrimary">
+        <div className="min-h-screen bg-[#f1f3f6] pt-16 sm:pt-24 pb-20 font-sans text-textPrimary">
             <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
                 <AnimatePresence mode="wait">
                     {!selectedOrder ? (
@@ -339,7 +339,7 @@ const Orders = () => {
                             </div>
 
                             <header className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-black/5 pb-4">
-                                <h1 className="text-3xl font-bold text-textPrimary">Your Orders</h1>
+                                <h1 className="text-xl sm:text-3xl font-bold text-textPrimary">Your Orders</h1>
                                 
                                 {/* Professional Search within Orders */}
                                 <div className="relative w-full md:w-80">
@@ -360,7 +360,7 @@ const Orders = () => {
                             </header>
 
                             {/* Clean Text-based Filters (Amazon Style) */}
-                            <div className="flex gap-6 mb-6 overflow-x-auto no-scrollbar border-b border-slate-200">
+                            <div className="flex gap-4 sm:gap-6 mb-6 overflow-x-auto no-scrollbar border-b border-slate-200">
                                 {filters.map(f => {
                                     const isActive = activeFilter === f;
                                     return (
@@ -399,7 +399,7 @@ const Orders = () => {
                                                 className="bg-white border rounded-xl border-slate-200 shadow-sm overflow-hidden"
                                             >
                                                 {/* Amazon Style Order Header Block */}
-                                                <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-wrap gap-x-8 gap-y-4 text-sm text-textSecondary">
+                                                <div className="bg-slate-50 border-b border-slate-200 p-3 sm:p-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-textSecondary">
                                                     <div>
                                                         <p className="font-medium uppercase text-xs mb-0.5">Order Placed</p>
                                                         <p className="font-bold text-textPrimary">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
@@ -420,14 +420,14 @@ const Orders = () => {
                                                 </div>
 
                                                 {/* Content Part */}
-                                                <div className="p-5">
+                                                <div className="p-4">
                                                     <h3 className={`text-lg font-bold mb-4 flex items-center gap-2 ${statusInfo.color.split(' ')[0]}`}>
                                                         {statusInfo.label}
                                                     </h3>
                                                     
-                                                    <div className="flex flex-col md:flex-row gap-6">
+                                                    <div className="flex gap-4">
                                                         {/* Thumbnail */}
-                                                        <div className="w-24 h-24 shrink-0 border border-slate-100 rounded bg-white p-1">
+                                                        <div className="w-16 h-16 sm:w-24 sm:h-24 shrink-0 border border-slate-100 rounded bg-white p-1">
                                                             <img 
                                                                 src={order.orderItems?.[0]?.image || "https://via.placeholder.com/400"} 
                                                                 className="w-full h-full object-contain" 

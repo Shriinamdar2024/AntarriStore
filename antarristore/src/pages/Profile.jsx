@@ -87,7 +87,7 @@ const Profile = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans text-slate-900 relative">
+        <div className="min-h-screen bg-[#f1f3f6] pt-16 sm:pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans text-slate-900 relative">
             <AnimatePresence>
                 {showSuccess && (
                     <motion.div
@@ -114,9 +114,9 @@ const Profile = () => {
 
             <div className="max-w-[1280px] mx-auto">
                 {/* Header Container */}
-                <div className="bg-white rounded-xl shadow-sm border border-black/5 p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 sm:p-6 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">Your Account</h1>
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-1">Your Account</h1>
                         <p className="text-sm font-medium text-slate-500">Manage your profile securely</p>
                     </div>
 
@@ -194,7 +194,7 @@ const Profile = () => {
                         <motion.div
                             key={activeTab}
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-                            className="bg-white rounded-xl shadow-sm border border-black/5 p-6 md:p-8"
+                            className="bg-white rounded-xl shadow-sm border border-black/5 p-4 sm:p-6 md:p-8"
                         >
                             <h2 className="text-xl font-bold text-slate-900 mb-6 border-b border-slate-100 pb-4">{activeTab}</h2>
 

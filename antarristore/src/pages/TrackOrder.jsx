@@ -120,29 +120,29 @@ const TrackOrder = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 font-sans text-slate-900">
+        <div className="min-h-screen bg-[#f1f3f6] pt-16 sm:pt-24 pb-20 font-sans text-slate-900">
             
             {/* Standard White Tracking Banner */}
             <div className="bg-white border-b border-black/5 shadow-sm mb-8 relative">
-                <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 text-center">
-                    <div className="w-16 h-16 bg-blue-50 text-blue-600 flex items-center justify-center rounded-full mx-auto mb-4">
+                <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 md:py-16 text-center">
+                    <div className="w-10 h-10 sm:w-16 sm:h-16 bg-blue-50 text-blue-600 flex items-center justify-center rounded-full mx-auto mb-3">
                         <Box className="w-8 h-8" />
                     </div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Track Your Package</h1>
-                    <p className="text-slate-500 font-medium mb-8">Enter your Order ID to get real-time tracking updates.</p>
+                    <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 mb-1 sm:mb-2">Track Your Package</h1>
+                    <p className="text-slate-500 font-medium mb-4 sm:mb-8 text-sm">Enter your Order ID to get real-time tracking updates.</p>
 
                     <div className="relative max-w-xl mx-auto flex items-center bg-white border-2 border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-500 transition-colors shadow-sm">
                         <input
                             type="text"
                             placeholder="e.g. ORD-2026..."
-                            className="flex-1 bg-transparent px-5 py-4 text-sm font-bold text-slate-900 outline-none"
+                            className="flex-1 bg-transparent px-3 sm:px-5 py-3 sm:py-4 text-sm font-bold text-slate-900 outline-none"
                             value={searchId}
                             onChange={(e) => setSearchId(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && performTracking(searchId)}
                         />
                         <button
                             onClick={() => performTracking(searchId)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 font-bold text-sm transition-colors flex items-center gap-2 h-full"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 sm:px-8 py-3 sm:py-4 font-bold text-sm transition-colors flex items-center gap-2 h-full"
                         >
                             Track <Search className="w-4 h-4 hidden sm:block" />
                         </button>
@@ -169,7 +169,7 @@ const TrackOrder = () => {
                         <motion.div
                             key="results"
                             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-                            className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-black/5"
+                            className="bg-white rounded-xl p-4 sm:p-6 md:p-8 shadow-sm border border-black/5"
                         >
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-6 gap-4">
                                 <div>
@@ -201,7 +201,7 @@ const TrackOrder = () => {
                             </div>
 
                             {/* Tracking Stepper */}
-                            <div className="py-12 md:py-16">
+                            <div className="py-6 sm:py-12 md:py-16">
                                 <div className="relative">
                                     <div className="absolute top-1/2 left-[10%] right-[10%] h-1 bg-slate-100 -translate-y-1/2 rounded-full hidden md:block" />
                                     
@@ -219,7 +219,7 @@ const TrackOrder = () => {
                                             const Icon = step.icon;
                                             
                                             return (
-                                                <div key={idx} className="flex md:flex-col items-center gap-4 md:gap-4 md:w-1/4 relative group">
+                                                <div key={idx} className="flex md:flex-col items-center gap-3 md:gap-4 md:w-1/4 relative group">
                                                     {idx < steps.length - 1 && (
                                                         <div className="absolute left-6 top-14 bottom-[-2rem] w-1 bg-slate-100 md:hidden rounded-full">
                                                             {foundOrder.status !== 'Cancelled' && idx < foundOrder.currentStepIndex && (
@@ -228,7 +228,7 @@ const TrackOrder = () => {
                                                         </div>
                                                     )}
                                                     
-                                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 border-[3px] transition-all duration-500 shadow-sm z-10 bg-white
+                                                    <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 border-[3px] transition-all duration-500 shadow-sm z-10 bg-white
                                                         ${foundOrder.status === 'Cancelled' ? 'border-slate-200 text-slate-300' :
                                                         isCompleted ? 'border-emerald-500 text-emerald-600 shadow-[0_0_0_4px_rgba(16,185,129,0.1)]' : 
                                                         'border-slate-200 text-slate-300'}`}>

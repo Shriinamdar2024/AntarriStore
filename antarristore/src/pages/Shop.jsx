@@ -69,7 +69,7 @@ const Shop = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f1f3f6] pt-24 pb-20 font-sans text-textPrimary">
+        <div className="min-h-screen bg-[#f1f3f6] pt-16 sm:pt-24 pb-20 font-sans text-textPrimary">
             
             {/* Amazon/Flipkart Style Premium Hero Banner */}
             <div className="bg-white border-b border-black/5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] mb-6">
@@ -82,28 +82,28 @@ const Shop = () => {
                         <span className="text-textPrimary font-semibold">{filter}</span>
                     </div>
 
-                    <div className="relative w-full h-[200px] sm:h-[280px] lg:h-[340px] rounded-2xl md:rounded-3xl overflow-hidden group shadow-sm bg-gradient-to-r from-blue-900 via-sky-800 to-indigo-900 border border-black/5">
+                    <div className="relative w-full h-[130px] sm:h-[280px] lg:h-[340px] rounded-xl md:rounded-3xl overflow-hidden group shadow-sm bg-gradient-to-r from-blue-900 via-sky-800 to-indigo-900 border border-black/5">
                         {/* Decorative Graphic Elements */}
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
                         <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-accent/40 to-transparent"></div>
                         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-accent/30 blur-[100px] rounded-full"></div>
                         
-                        <div className="relative h-full flex flex-col justify-center px-8 md:px-16 lg:px-24 z-10">
+                        <div className="relative h-full flex flex-col justify-center px-5 md:px-16 lg:px-24 z-10">
                             <motion.span 
                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                                className="inline-block px-3 py-1 bg-yellow-400 text-yellow-900 text-[10px] sm:text-xs font-bold uppercase tracking-widest rounded-sm w-fit mb-4"
+                                className="inline-block px-2 py-0.5 bg-yellow-400 text-yellow-900 text-[9px] sm:text-xs font-bold uppercase tracking-widest rounded-sm w-fit mb-1 sm:mb-4"
                             >
                                 Grand Festival Sale
                             </motion.span>
                             <motion.h1 
                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                                className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-2 sm:mb-4 tracking-tight"
+                                className="text-xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-1 sm:mb-4 tracking-tight"
                             >
                                 {filter === 'All' ? 'Premium Storefront' : `${filter} Collection`}
                             </motion.h1>
                             <motion.p 
                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                                className="text-sky-100 text-sm sm:text-lg max-w-xl font-medium"
+                                className="hidden sm:block text-sky-100 text-sm sm:text-lg max-w-xl font-medium"
                             >
                                 Up to 40% Off on top brands. Exclusive early access for Assured members.
                             </motion.p>
@@ -116,13 +116,22 @@ const Shop = () => {
                 <div className="flex flex-col lg:flex-row gap-6">
                     
                     {/* Mobile Filters Trigger */}
-                    <div className="lg:hidden flex justify-between bg-white p-3 rounded-xl border border-black/5 shadow-sm">
-                        <button onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)} className="flex items-center gap-2 font-semibold text-textPrimary px-3 py-1.5 focus:bg-primary rounded-lg transition-colors">
-                            <Filter size={18} /> Filters
+                    <div className="lg:hidden flex justify-between bg-white px-3 py-2 rounded-xl border border-black/5 shadow-sm">
+                        <button onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)} className="flex items-center gap-1.5 font-semibold text-textPrimary px-2 py-1 focus:bg-primary rounded-lg transition-colors text-sm">
+                            <Filter size={15} /> Filters
                         </button>
-                        <div className="flex items-center gap-2 border-l border-tertiary pl-3">
-                            <span className="text-sm font-medium text-textSecondary">Sort by</span>
-                            <span className="font-semibold text-textPrimary text-sm">Popular</span>
+                        <div className="flex items-center gap-1 border-l border-tertiary pl-3">
+                            <span className="text-xs font-medium text-textSecondary">Sort:</span>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="text-xs font-bold text-textPrimary bg-transparent outline-none border-none cursor-pointer"
+                            >
+                                <option value="popularity">Popular</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="newest">Newest</option>
+                            </select>
                         </div>
                     </div>
 
@@ -258,7 +267,7 @@ const Shop = () => {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 'grid-cols-1 gap-4'}`}
+                                className={`grid ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4' : 'grid-cols-1 gap-4'}`}
                             >
                                 {filteredProducts.map((product, index) => (
                                     <ProductCard

@@ -59,29 +59,29 @@ const ProductCard = ({ id, images, name, price, category, index }) => {
                     <motion.img
                         src={displayImage}
                         alt={name}
-                        className={`w-full h-full object-contain max-h-[220px] transition-transform duration-700 ease-out ${isHovered ? 'scale-105' : 'scale-100'}`}
+                        className={`w-full h-full object-contain max-h-[150px] sm:max-h-[220px] transition-transform duration-700 ease-out ${isHovered ? 'scale-105' : 'scale-100'}`}
                     />
                 </div>
             </Link>
 
             {/* Information Section */}
-            <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
+            <div className="p-2.5 sm:p-5 flex flex-col flex-1 bg-white">
                 
                 {/* Brand / Category */}
-                <p className="text-[11px] font-bold uppercase tracking-widest text-[#0ea5e9] mb-1.5">
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-widest text-[#0ea5e9] mb-1">
                     {category}
                 </p>
 
                 {/* Title */}
                 <Link to={`/product/${id}`}>
-                    <h3 className="text-sm sm:text-base font-semibold text-textPrimary leading-tight mb-2 line-clamp-2 hover:text-accent transition-colors">
+                    <h3 className="text-xs sm:text-base font-semibold text-textPrimary leading-tight mb-1.5 line-clamp-2 hover:text-accent transition-colors">
                         {name}
                     </h3>
                 </Link>
 
                 {/* Ratings (Amazon/Flipkart Style) */}
-                <div className="flex items-center gap-2 mb-3">
-                    <span className="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
+                    <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
                         {rating} <Star className="w-2.5 h-2.5 fill-white" />
                     </span>
                     <span className="text-xs text-textSecondary font-medium">({reviews.toLocaleString()})</span>
@@ -92,17 +92,17 @@ const ProductCard = ({ id, images, name, price, category, index }) => {
 
                 {/* Price Section */}
                 <div className="mt-auto">
-                    <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-xl font-bold text-textPrimary">
+                    <div className="flex items-baseline gap-1.5 mb-0.5">
+                        <span className="text-base sm:text-xl font-bold text-textPrimary">
                             ₹{price.toLocaleString('en-IN')}
                         </span>
-                        <span className="text-sm text-textSecondary line-through font-medium">
+                        <span className="text-xs sm:text-sm text-textSecondary line-through font-medium">
                             ₹{originalPrice.toLocaleString('en-IN')}
                         </span>
                     </div>
 
                     {/* Delivery Info */}
-                    <p className="text-xs text-textSecondary font-medium mb-4">
+                    <p className="text-[10px] sm:text-xs text-textSecondary font-medium mb-2 sm:mb-4">
                         Free delivery by <span className="font-bold text-textPrimary">Tomorrow</span>
                     </p>
 
@@ -112,7 +112,7 @@ const ProductCard = ({ id, images, name, price, category, index }) => {
                             e.preventDefault();
                             addToCart({ id, image: displayImage, name, price, category });
                         }}
-                        className="w-full bg-[#facc15] hover:bg-[#eab308] text-zinc-900 border border-[#ca8a04] py-2.5 px-4 rounded-xl text-sm font-bold transition-all shadow-[0_2px_4px_rgba(250,204,21,0.2)] flex items-center justify-center gap-2 relative overflow-hidden"
+                        className="w-full bg-[#facc15] hover:bg-[#eab308] text-zinc-900 border border-[#ca8a04] py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all shadow-[0_2px_4px_rgba(250,204,21,0.2)] flex items-center justify-center gap-1 sm:gap-2 relative overflow-hidden"
                     >
                         <ShoppingCart className="w-4 h-4" />
                         <span>Add to Cart</span>
