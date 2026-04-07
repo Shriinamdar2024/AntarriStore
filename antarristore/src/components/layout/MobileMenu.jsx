@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserCircle, Home, ShoppingBag, Info, Phone, Package, Heart, Truck, Search, LogIn, LogOut, User } from 'lucide-react';
+import { X, UserCircle, Home, Search, LogIn, LogOut, Box, Watch, Shirt, BookOpen, Truck, ClipboardList, Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -14,6 +14,20 @@ const MobileMenu = ({ isOpen, onClose, onSearchClick }) => {
         navigate('/');
     };
 
+    const mainLinks = [
+        { name: 'Home', href: '/', icon: <Home className="w-4 h-4" /> },
+        { name: 'Shop', href: '/shop', icon: <Box className="w-4 h-4" /> },
+        { name: 'Accessories', href: '/accessories', icon: <Watch className="w-4 h-4" /> },
+        { name: 'Garments', href: '/garments', icon: <Shirt className="w-4 h-4" /> },
+        { name: 'Our Story', href: '/about', icon: <BookOpen className="w-4 h-4" /> },
+    ];
+
+    const accountLinks = [
+        { name: 'Track Order', href: '/track-order', icon: <Truck className="w-4 h-4" /> },
+        { name: 'Orders', href: '/orders', icon: <ClipboardList className="w-4 h-4" /> },
+        { name: 'Wishlist', href: '/wishlist', icon: <Heart className="w-4 h-4" /> },
+    ];
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -24,7 +38,7 @@ const MobileMenu = ({ isOpen, onClose, onSearchClick }) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] md:hidden"
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] lg:hidden"
                     />
 
                     {/* Slide-out Sidebar */}
@@ -33,105 +47,68 @@ const MobileMenu = ({ isOpen, onClose, onSearchClick }) => {
                         animate={{ x: 0 }}
                         exit={{ x: '-100%' }}
                         transition={{ type: 'tween', duration: 0.3 }}
-                        className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-white z-[100] flex flex-col md:hidden shadow-2xl overflow-y-auto"
+                        className="fixed inset-y-0 left-0 w-[80%] max-w-[300px] bg-white z-[100] flex flex-col lg:hidden shadow-2xl"
                     >
                         {/* Auth Header Area */}
-                        <div className="bg-[#232F3E] text-white p-6 flex items-center gap-4 relative">
+                        <div className="bg-[#232F3E] text-white p-4 flex items-center gap-3 relative shrink-0">
                             <button 
                                 onClick={onClose} 
-                                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-full transition-colors"
+                                className="absolute top-3 right-3 p-1 hover:bg-white/10 rounded-full transition-colors"
                             >
-                                <X className="w-6 h-6" />
+                                <X className="w-5 h-5" />
                             </button>
 
-                            <UserCircle className="w-10 h-10 text-white/90" />
+                            <UserCircle className="w-8 h-8 text-white/90" />
                             <div className="flex flex-col">
                                 {user ? (
                                     <>
-                                        <span className="font-bold text-lg">Hello, {user.name || user.fullName || 'User'}</span>
-                                        <Link to="/profile" onClick={onClose} className="text-xs text-yellow-400 hover:underline">Manage Account</Link>
+                                        <span className="font-bold text-sm">Hello, {user.name || user.fullName || 'User'}</span>
+                                        <Link to="/profile" onClick={onClose} className="text-[10px] text-yellow-400 hover:underline">Manage Account</Link>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="font-bold text-lg">Browse Store</span>
-                                        <Link to="/login" onClick={onClose} className="text-xs text-yellow-400 hover:underline">Sign In / Register</Link>
+                                        <span className="font-bold text-sm">Browse Store</span>
+                                        <Link to="/login" onClick={onClose} className="text-[10px] text-yellow-400 hover:underline">Sign In / Register</Link>
                                     </>
                                 )}
                             </div>
                         </div>
 
-                        {/* Navigation Groups */}
-                        <div className="flex-1 py-4">
-                            
-                            <div className="mb-6">
-                                <h3 className="px-6 mb-3 text-lg font-bold text-slate-800">Shop Catalog</h3>
+                        {/* Navigation Scrollable Area */}
+                        <div className="flex-1 overflow-y-auto py-2 h-full flex justify-between flex-col">
+                            <div>
                                 <div className="flex flex-col">
-                                    <Link to="/" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <Home className="w-5 h-5 text-slate-400" />
-                                        <span className="text-slate-700 font-medium font-sans">Home Page</span>
-                                    </Link>
-                                    <Link to="/shop" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <ShoppingBag className="w-5 h-5 text-slate-400" />
-                                        <span className="text-slate-700 font-medium font-sans">All Products</span>
-                                    </Link>
-                                    <Link to="/accessories" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <span className="w-5 h-5 flex items-center justify-center text-slate-400 text-[10px] bg-slate-100 rounded">AC</span>
-                                        <span className="text-slate-700 font-medium font-sans">Tech Accessories</span>
-                                    </Link>
-                                    <Link to="/apparel" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <span className="w-5 h-5 flex items-center justify-center text-slate-400 text-[10px] bg-slate-100 rounded">AP</span>
-                                        <span className="text-slate-700 font-medium font-sans">Premium Apparel</span>
-                                    </Link>
+                                    {mainLinks.map((link) => (
+                                        <Link key={link.name} to={link.href} onClick={onClose} className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-50">
+                                            <span className="text-slate-400">{link.icon}</span>
+                                            <span className="text-slate-700 font-medium text-sm">{link.name}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+
+                                <div className="my-2" />
+
+                                <div className="flex flex-col bg-slate-50 border-y border-slate-100">
+                                    <span className="px-5 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Your Account</span>
+                                    {accountLinks.map((link) => (
+                                        <Link key={link.name} to={link.href} onClick={onClose} className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-100 transition-colors">
+                                            <span className="text-slate-400">{link.icon}</span>
+                                            <span className="text-slate-700 font-medium text-sm">{link.name}</span>
+                                        </Link>
+                                    ))}
                                 </div>
                             </div>
-
-                            <div className="h-px bg-slate-200 mx-6 mb-6" />
-
-                            <div className="mb-6">
-                                <h3 className="px-6 mb-3 text-lg font-bold text-slate-800">Your Account</h3>
-                                <div className="flex flex-col">
-                                    <Link to="/orders" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <Package className="w-5 h-5 text-slate-400" />
-                                        <span className="text-slate-700 font-medium font-sans">Your Orders</span>
-                                    </Link>
-                                    <Link to="/wishlist" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <Heart className="w-5 h-5 text-slate-400" />
-                                        <span className="text-slate-700 font-medium font-sans">Wishlist</span>
-                                    </Link>
-                                    <Link to="/track-order" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <Truck className="w-5 h-5 text-slate-400" />
-                                        <span className="text-slate-700 font-medium font-sans">Track Package</span>
-                                    </Link>
-                                </div>
-                            </div>
-
-                            <div className="h-px bg-slate-200 mx-6 mb-6" />
-
-                            <div className="mb-6">
-                                <h3 className="px-6 mb-3 text-lg font-bold text-slate-800">Support Center</h3>
-                                <div className="flex flex-col">
-                                    <Link to="/about" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <Info className="w-5 h-5 text-slate-400" />
-                                        <span className="text-slate-700 font-medium font-sans">About Us</span>
-                                    </Link>
-                                    <Link to="/contact" onClick={onClose} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                                        <Phone className="w-5 h-5 text-slate-400" />
-                                        <span className="text-slate-700 font-medium font-sans">Contact Support</span>
-                                    </Link>
-                                </div>
-                            </div>
-
                         </div>
 
                         {/* Bottom Actions */}
-                        <div className="border-t border-slate-200 p-4 space-y-3 bg-slate-50">
+                        <div className="border-t border-slate-200 p-3 space-y-2 bg-slate-50 shrink-0">
                             {/* Search */}
                             {onSearchClick && (
                                 <button
                                     onClick={() => { onClose(); onSearchClick(); }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-700 font-bold text-sm hover:bg-slate-50 transition-colors shadow-sm"
+                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded text-slate-700 font-bold text-sm hover:bg-slate-50 transition-colors shadow-sm"
                                 >
-                                    <Search className="w-5 h-5 text-slate-400" />
+                                    <Search className="w-4 h-4 text-slate-400" />
                                     Search Products
                                 </button>
                             )}
@@ -139,18 +116,18 @@ const MobileMenu = ({ isOpen, onClose, onSearchClick }) => {
                             {user ? (
                                 <button
                                     onClick={handleSignOut}
-                                    className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors shadow-sm"
+                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded font-bold text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors shadow-sm"
                                 >
-                                    <LogOut className="w-5 h-5" />
+                                    <LogOut className="w-4 h-4" />
                                     Sign Out
                                 </button>
                             ) : (
                                 <Link
                                     to="/login"
                                     onClick={onClose}
-                                    className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#232F3E] text-white rounded font-bold text-sm hover:bg-slate-800 transition-colors shadow-sm"
                                 >
-                                    <LogIn className="w-5 h-5" />
+                                    <LogIn className="w-4 h-4" />
                                     Sign In / Register
                                 </Link>
                             )}
