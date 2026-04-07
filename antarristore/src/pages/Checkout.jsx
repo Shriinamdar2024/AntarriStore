@@ -180,7 +180,7 @@ const Checkout = () => {
                 },
             };
 
-            const { data } = await axios.post('http://localhost:5000/api/orders', orderPayload, config);
+            const { data } = await axios.post('https://antarri-backend.onrender.com/api/orders', orderPayload, config);
 
             if (setCartItems) setCartItems([]);
             localStorage.removeItem('ant_orders');

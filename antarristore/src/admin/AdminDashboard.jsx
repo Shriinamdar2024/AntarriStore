@@ -16,7 +16,7 @@ const AdminDashboard = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 };
 
-                const { data } = await axios.get('http://localhost:5000/api/orders', config);
+                const { data } = await axios.get('https://antarri-backend.onrender.com/api/orders', config);
                 setOrders(data);
                 setLoading(false);
             } catch (err) {

@@ -35,7 +35,7 @@ const AdminOrders = () => {
                 return;
             }
 
-            const { data } = await axios.get('http://localhost:5000/api/orders', {
+            const { data } = await axios.get('https://antarri-backend.onrender.com/api/orders', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -77,7 +77,7 @@ const AdminOrders = () => {
             }
 
             await axios.put(
-                `http://localhost:5000/api/orders/${id}/status`,
+                `https://antarri-backend.onrender.com/api/orders/${id}/status`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

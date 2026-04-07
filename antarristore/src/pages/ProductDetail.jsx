@@ -24,8 +24,8 @@ const ProductDetail = () => {
         const fetchProductData = async () => {
             setLoading(true);
             try {
-                const baseURL = "http://localhost:5000";
-                const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+                const baseURL = "https://antarri-backend.onrender.com";
+                const response = await axios.get(`https://antarri-backend.onrender.com/api/products/${id}`);
                 setProduct(response.data);
 
                 const allRes = await axios.get(`${baseURL}/api/products/public`);

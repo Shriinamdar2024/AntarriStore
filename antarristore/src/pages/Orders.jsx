@@ -38,7 +38,7 @@ const Orders = () => {
                     return;
                 }
 
-                const response = await fetch('http://localhost:5000/api/orders/myorders', {
+                const response = await fetch('https://antarri-backend.onrender.com/api/orders/myorders', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ const Orders = () => {
             const endpoint = isCancel ? 'cancel' : 'return';
 
             const response = await axios.put(
-                `http://localhost:5000/api/orders/${identifier}/${endpoint}`,
+                `https://antarri-backend.onrender.com/api/orders/${identifier}/${endpoint}`,
                 { reason: reason },
                 {
                     headers: {

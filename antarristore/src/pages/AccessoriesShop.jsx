@@ -19,7 +19,7 @@ const AccessoriesShop = () => {
         const fetchAccessories = async () => {
             try {
                 const baseURL = window.location.hostname === 'localhost'
-                    ? 'http://localhost:5000'
+                    ? 'https://antarri-backend.onrender.com'
                     : 'https://shrirupportfolio.onrender.com';
 
                 const response = await axios.get(`${baseURL}/api/products/public`);

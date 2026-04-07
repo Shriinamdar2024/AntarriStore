@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     const updateUser = async (updatedData) => {
         try {
             const token = localStorage.getItem('token');
-            const { data } = await axios.put('http://localhost:5000/api/users/profile', updatedData, {
+            const { data } = await axios.put('https://antarri-backend.onrender.com/api/users/profile', updatedData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
