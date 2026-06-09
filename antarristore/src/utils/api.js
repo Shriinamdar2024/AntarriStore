@@ -1,8 +1,15 @@
 import axios from 'axios';
 
-// ✅ Direct backend URL (no env, no conditions)
+// ✅ Dynamic backend URL switching based on hostname
+const getBaseURL = () => {
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        return 'http://localhost:5000/api';
+    }
+    return 'https://antarri-backend.onrender.com/api';
+};
+
 const API = axios.create({
-    baseURL: 'https://antarri-backend.onrender.com/api'
+    baseURL: getBaseURL()
 });
 
 // ✅ Attach JWT token for protected routes
@@ -15,6 +22,6 @@ API.interceptors.request.use((req) => {
 });
 
 // ✅ Debug log
-console.log("Current API Target:", 'https://antarri-backend.onrender.com/api');
+console.log("Current API Target:", getBaseURL());
 
 export default API;

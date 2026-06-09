@@ -57,6 +57,70 @@ router.get('/email/test', async (req, res) => {
     }
 });
 
+// Debug: diagnose different SMTP configurations
+router.get('/email/diagnose', async (req, res) => {
+    const results = {};
+    
+    // Test 1: gmail service with pool
+    try {
+        const t1 = nodemailer.createTransport({
+            service: 'gmail',
+            pool: true,
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+            connectionTimeout: 10000,
+        });
+        await t1.verify();
+        results.service_gmail_pool = 'SUCCESS';
+    } catch (err) {
+        results.service_gmail_pool = err.message || err.toString();
+    }
+
+    // Test 2: gmail service without pool
+    try {
+        const t2 = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+            connectionTimeout: 10000,
+        });
+        await t2.verify();
+        results.service_gmail_no_pool = 'SUCCESS';
+    } catch (err) {
+        results.service_gmail_no_pool = err.message || err.toString();
+    }
+
+    // Test 3: Port 587 (TLS)
+    try {
+        const t3 = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+            connectionTimeout: 10000,
+        });
+        await t3.verify();
+        results.port_587_tls = 'SUCCESS';
+    } catch (err) {
+        results.port_587_tls = err.message || err.toString();
+    }
+
+    // Test 4: Port 465 (SSL)
+    try {
+        const t4 = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+            connectionTimeout: 10000,
+        });
+        await t4.verify();
+        results.port_465_ssl = 'SUCCESS';
+    } catch (err) {
+        results.port_465_ssl = err.message || err.toString();
+    }
+
+    res.json(results);
+});
+
 // --- CUSTOMER ROUTES ---
 router.post('/register', registerUser);
 router.post('/login', loginUser);
