@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 const { protect } = require('../middleware/authMiddleware');
 const getOtpTemplate = require('../utils/emailTemplate');
 const {
@@ -12,23 +12,33 @@ const {
     verifyRegisterOtp,
     verifyLoginOtp
 } = require('../controllers/userControlller');
-// Setup Email Transporter — with timeout to prevent hanging on Render cold start
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    pool: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    connectionTimeout: 10000,  // 10s to establish connection
-    greetingTimeout: 10000,    // 10s to get SMTP greeting
-    socketTimeout: 20000,      // 20s socket inactivity limit
-});
 
-// Log SMTP connectivity at startup to surface configuration issues early
-transporter.verify()
-    .then(() => console.log('✅ SMTP transporter verified — ready to send emails'))
-    .catch((err) => console.error('❌ SMTP transporter verify failed at startup:', err.message || err));
+// Brevo HTTP Email Sender Helper
+const sendBrevoEmail = async (to, subject, html) => {
+    if (!process.env.BREVO_API_KEY) {
+        console.warn("⚠️ BREVO_API_KEY is not defined. Email will not be sent.");
+        throw new Error("Email service is not configured (BREVO_API_KEY missing)");
+    }
+    
+    await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+            sender: {
+                name: 'Antari Store',
+                email: process.env.EMAIL_USER || 'shriinamdar88@gmail.com'
+            },
+            to: [{ email: to }],
+            subject: subject,
+            htmlContent: html
+        },
+        {
+            headers: {
+                'api-key': process.env.BREVO_API_KEY,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+};
 
 // Debug: test SMTP connectivity and send a test email
 router.get('/email/test', async (req, res) => {
@@ -36,89 +46,17 @@ router.get('/email/test', async (req, res) => {
     if (!to) return res.status(400).json({ message: 'No recipient specified. Provide ?to=you@example.com' });
 
     try {
-        // Verify transporter connection first
-        await transporter.verify();
-    } catch (err) {
-        console.error('❌ SMTP VERIFY FAILED:', err);
-        return res.status(500).json({ message: 'SMTP verify failed', error: err.message || err.toString() });
-    }
-
-    try {
-        const info = await transporter.sendMail({
-            from: `"Antaristore Test" <${process.env.EMAIL_USER}>`,
+        await sendBrevoEmail(
             to,
-            subject: 'Antaristore — Test Email',
-            text: 'This is a test email from Antaristore backend.'
-        });
-        return res.json({ message: 'Test email sent', info });
+            'Antaristore — Test Email',
+            'This is a test email from Antaristore backend.'
+        );
+        return res.json({ message: 'Test email sent successfully via Brevo API' });
     } catch (err) {
-        console.error('❌ SEND TEST EMAIL FAILED:', err);
-        return res.status(500).json({ message: 'Failed to send test email', error: err.message || err.toString() });
+        console.error('❌ SEND TEST EMAIL FAILED:', err.response?.data || err.message);
+        const errMsg = err.response?.data?.message || err.message || err.toString();
+        return res.status(500).json({ message: 'Failed to send test email', error: errMsg });
     }
-});
-
-// Debug: diagnose different SMTP configurations
-router.get('/email/diagnose', async (req, res) => {
-    const results = {};
-    
-    // Test 1: gmail service with pool
-    try {
-        const t1 = nodemailer.createTransport({
-            service: 'gmail',
-            pool: true,
-            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-            connectionTimeout: 10000,
-        });
-        await t1.verify();
-        results.service_gmail_pool = 'SUCCESS';
-    } catch (err) {
-        results.service_gmail_pool = err.message || err.toString();
-    }
-
-    // Test 2: gmail service without pool
-    try {
-        const t2 = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-            connectionTimeout: 10000,
-        });
-        await t2.verify();
-        results.service_gmail_no_pool = 'SUCCESS';
-    } catch (err) {
-        results.service_gmail_no_pool = err.message || err.toString();
-    }
-
-    // Test 3: Port 587 (TLS)
-    try {
-        const t3 = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-            connectionTimeout: 10000,
-        });
-        await t3.verify();
-        results.port_587_tls = 'SUCCESS';
-    } catch (err) {
-        results.port_587_tls = err.message || err.toString();
-    }
-
-    // Test 4: Port 465 (SSL)
-    try {
-        const t4 = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-            connectionTimeout: 10000,
-        });
-        await t4.verify();
-        results.port_465_ssl = 'SUCCESS';
-    } catch (err) {
-        results.port_465_ssl = err.message || err.toString();
-    }
-
-    res.json(results);
 });
 
 // --- CUSTOMER ROUTES ---
@@ -176,30 +114,22 @@ router.post('/admin/login', async (req, res) => {
 
         await user.save({ validateModifiedOnly: true });
 
-        // Send OTP Email — with 15s timeout so it doesn't hang forever
-        const sendMailWithTimeout = (mailOptions) =>
-            Promise.race([
-                transporter.sendMail(mailOptions),
-                new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Email send timeout — try again')), 15000)
-                )
-            ]);
-
-        await sendMailWithTimeout({
-            from: `"Antaristore Admin" <${process.env.EMAIL_USER}>`,
-            to: user.email,
-            subject: 'AntariStore — Admin Sign-In Code',
-            html: getOtpTemplate(otp, "login")
-        });
+        // Send OTP Email
+        try {
+            await sendBrevoEmail(
+                user.email,
+                'AntariStore — Admin Sign-In Code',
+                getOtpTemplate(otp, "login")
+            );
+        } catch (mailErr) {
+            console.error("❌ Send OTP Email Failed:", mailErr.response?.data || mailErr.message);
+            throw new Error("Email delivery failed: " + (mailErr.response?.data?.message || mailErr.message));
+        }
 
         res.json({ message: "OTP sent to your email" });
     } catch (err) {
         console.error("Admin Login Error:", err);
-        // Return specific timeout message so user knows to retry
-        const msg = err.message.includes('timeout')
-            ? 'Email server is warming up — please try again in 10 seconds'
-            : 'System Error: ' + err.message;
-        res.status(500).json({ message: msg });
+        res.status(500).json({ message: 'System Error: ' + err.message });
     }
 });
 

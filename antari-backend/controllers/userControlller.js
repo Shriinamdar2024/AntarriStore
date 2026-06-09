@@ -1,16 +1,34 @@
 const getOtpTemplate = require('../utils/emailTemplate');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 
-// Mail transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+// Brevo HTTP Email Sender Helper
+const sendBrevoEmail = async (to, subject, html) => {
+    if (!process.env.BREVO_API_KEY) {
+        console.warn("⚠️ BREVO_API_KEY is not defined. Email will not be sent.");
+        throw new Error("Email service is not configured (BREVO_API_KEY missing)");
+    }
+    
+    await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+            sender: {
+                name: 'Antari Store',
+                email: process.env.EMAIL_USER || 'shriinamdar88@gmail.com'
+            },
+            to: [{ email: to }],
+            subject: subject,
+            htmlContent: html
+        },
+        {
+            headers: {
+                'api-key': process.env.BREVO_API_KEY,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+};
 
 // Helper to create JWT
 const generateToken = (id) => {
@@ -60,16 +78,17 @@ exports.registerUser = async (req, res) => {
         await user.save();
 
         try {
-            await transporter.sendMail({
-                to: user.email,
-                subject: "AntariStore — Verify Your Email",
-                html: getOtpTemplate(otp, "register")
-            });
+            await sendBrevoEmail(
+                user.email,
+                "AntariStore — Verify Your Email",
+                getOtpTemplate(otp, "register")
+            );
 
             res.json({ message: "OTP sent to email", email: user.email });
         } catch (mailErr) {
-            console.error('❌ SEND MAIL ERROR (registerUser):', mailErr);
-            return res.status(500).json({ message: 'Failed to send OTP email: ' + (mailErr.message || mailErr.toString()) });
+            console.error('❌ SEND MAIL ERROR (registerUser):', mailErr.response?.data || mailErr.message);
+            const errMsg = mailErr.response?.data?.message || mailErr.message || mailErr.toString();
+            return res.status(500).json({ message: 'Failed to send OTP email: ' + errMsg });
         }
 
     } catch (error) {
@@ -140,16 +159,17 @@ exports.loginUser = async (req, res) => {
         await user.save();
 
         try {
-            await transporter.sendMail({
-                to: user.email,
-                subject: "AntariStore — Sign-In Verification Code",
-                html: getOtpTemplate(otp, "login")
-            });
+            await sendBrevoEmail(
+                user.email,
+                "AntariStore — Sign-In Verification Code",
+                getOtpTemplate(otp, "login")
+            );
 
             res.json({ message: "OTP sent to email" });
         } catch (mailErr) {
-            console.error('❌ SEND MAIL ERROR (loginUser):', mailErr);
-            return res.status(500).json({ message: 'Failed to send OTP email: ' + (mailErr.message || mailErr.toString()) });
+            console.error('❌ SEND MAIL ERROR (loginUser):', mailErr.response?.data || mailErr.message);
+            const errMsg = mailErr.response?.data?.message || mailErr.message || mailErr.toString();
+            return res.status(500).json({ message: 'Failed to send OTP email: ' + errMsg });
         }
 
     } catch (error) {
