@@ -59,13 +59,18 @@ exports.registerUser = async (req, res) => {
 
         await user.save();
 
-        await transporter.sendMail({
-            to: user.email,
-            subject: "AntariStore — Verify Your Email",
-            html: getOtpTemplate(otp, "register")
-        });
+        try {
+            await transporter.sendMail({
+                to: user.email,
+                subject: "AntariStore — Verify Your Email",
+                html: getOtpTemplate(otp, "register")
+            });
 
-        res.json({ message: "OTP sent to email", email: user.email });
+            res.json({ message: "OTP sent to email", email: user.email });
+        } catch (mailErr) {
+            console.error('❌ SEND MAIL ERROR (registerUser):', mailErr);
+            return res.status(500).json({ message: 'Failed to send OTP email: ' + (mailErr.message || mailErr.toString()) });
+        }
 
     } catch (error) {
         console.error("❌ OTP SEND ERROR:", error);
@@ -78,7 +83,10 @@ exports.verifyRegisterOtp = async (req, res) => {
     const { email, otp, name, password } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        if (!email) return res.status(400).json({ message: 'EMAIL REQUIRED' });
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const user = await User.findOne({ email: normalizedEmail });
 
         if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
             return res.status(400).json({ message: "INVALID OR EXPIRED OTP" });
@@ -131,13 +139,18 @@ exports.loginUser = async (req, res) => {
 
         await user.save();
 
-        await transporter.sendMail({
-            to: user.email,
-            subject: "AntariStore — Sign-In Verification Code",
-            html: getOtpTemplate(otp, "login")
-        });
+        try {
+            await transporter.sendMail({
+                to: user.email,
+                subject: "AntariStore — Sign-In Verification Code",
+                html: getOtpTemplate(otp, "login")
+            });
 
-        res.json({ message: "OTP sent to email" });
+            res.json({ message: "OTP sent to email" });
+        } catch (mailErr) {
+            console.error('❌ SEND MAIL ERROR (loginUser):', mailErr);
+            return res.status(500).json({ message: 'Failed to send OTP email: ' + (mailErr.message || mailErr.toString()) });
+        }
 
     } catch (error) {
         console.error("❌ LOGIN OTP ERROR:", error.message);
@@ -150,7 +163,10 @@ exports.verifyLoginOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        if (!email) return res.status(400).json({ message: 'EMAIL REQUIRED' });
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const user = await User.findOne({ email: normalizedEmail });
 
         if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
             return res.status(400).json({ message: "INVALID OR EXPIRED OTP" });

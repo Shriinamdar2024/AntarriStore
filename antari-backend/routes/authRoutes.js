@@ -25,6 +25,38 @@ const transporter = nodemailer.createTransport({
     socketTimeout: 20000,      // 20s socket inactivity limit
 });
 
+// Log SMTP connectivity at startup to surface configuration issues early
+transporter.verify()
+    .then(() => console.log('✅ SMTP transporter verified — ready to send emails'))
+    .catch((err) => console.error('❌ SMTP transporter verify failed at startup:', err.message || err));
+
+// Debug: test SMTP connectivity and send a test email
+router.get('/email/test', async (req, res) => {
+    const to = (req.query.to || process.env.EMAIL_USER || '').toString();
+    if (!to) return res.status(400).json({ message: 'No recipient specified. Provide ?to=you@example.com' });
+
+    try {
+        // Verify transporter connection first
+        await transporter.verify();
+    } catch (err) {
+        console.error('❌ SMTP VERIFY FAILED:', err);
+        return res.status(500).json({ message: 'SMTP verify failed', error: err.message || err.toString() });
+    }
+
+    try {
+        const info = await transporter.sendMail({
+            from: `"Antaristore Test" <${process.env.EMAIL_USER}>`,
+            to,
+            subject: 'Antaristore — Test Email',
+            text: 'This is a test email from Antaristore backend.'
+        });
+        return res.json({ message: 'Test email sent', info });
+    } catch (err) {
+        console.error('❌ SEND TEST EMAIL FAILED:', err);
+        return res.status(500).json({ message: 'Failed to send test email', error: err.message || err.toString() });
+    }
+});
+
 // --- CUSTOMER ROUTES ---
 router.post('/register', registerUser);
 router.post('/login', loginUser);

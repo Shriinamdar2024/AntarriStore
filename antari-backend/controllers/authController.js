@@ -40,8 +40,13 @@ exports.login = async (req, res) => {
             html: getOtpTemplate(otp, "login"),
         };
 
-        await transporter.sendMail(mailOptions);
-        res.status(200).json({ message: 'OTP sent to registered email' });
+        try {
+            await transporter.sendMail(mailOptions);
+            res.status(200).json({ message: 'OTP sent to registered email' });
+        } catch (mailErr) {
+            console.error('❌ SEND MAIL ERROR (authController.login):', mailErr);
+            return res.status(500).json({ message: 'Failed to send OTP email: ' + (mailErr.message || mailErr.toString()) });
+        }
 
     } catch (error) {
         console.error("Auth Error:", error);
