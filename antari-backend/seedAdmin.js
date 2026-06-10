@@ -8,7 +8,7 @@ const seedAdmin = async () => {
         console.log("Connected to DB...");
 
         // 1. Clean up existing admin to prevent "User already exists" errors
-        const email = "shriinamdar88@gmail.com";
+        const email = "kulkarnipradnya066@gmail.com";
         await User.deleteOne({ email: email });
 
         // 2. Create the admin with PLAIN TEXT password
